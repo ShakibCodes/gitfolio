@@ -5,9 +5,22 @@ export default async function UserPage({
 }) {
   const { username } = await params;
 
+  const res = await fetch(`https://api.github.com/users/${username}`);
+
+  if (!res.ok) {
+    return <div>User not found</div>;
+  }
+
+  const user = await res.json();
+
   return (
     <div>
-      <h1>User: {username}</h1>
+      <h1>{user.name}</h1>
+      <p>@{user.login}</p>
+      <p>{user.bio}</p>
+      <p>Public Repos: {user.public_repos}</p>
+      <p>Followers: {user.followers}</p>
+      <p>Following: {user.following}</p>
     </div>
   );
 }
