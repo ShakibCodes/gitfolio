@@ -42,12 +42,41 @@ export default async function UserPage({
     <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
       
       {/* Profile */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold">
-          {user.name} <span className="text-gray-500">(@{user.login})</span>
-        </h1>
-        <p className="text-gray-600 mt-2 max-w-xl">{user.bio}</p>
+      <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
+
+  {/* Profile Card */}
+  <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md text-center mb-8">
+    <img
+      src={user.avatar_url}
+      alt="avatar"
+      className="w-24 h-24 rounded-full mx-auto mb-4 border"
+    />
+
+    <h1 className="text-2xl font-bold">
+      {user.name || user.login}
+    </h1>
+
+    <p className="text-gray-500">@{user.login}</p>
+
+    {user.bio && (
+      <p className="text-gray-600 mt-3">{user.bio}</p>
+    )}
+
+    <div className="flex justify-center gap-6 mt-4 text-sm">
+      <div>
+        <p className="font-semibold">{user.followers}</p>
+        <p className="text-gray-500">Followers</p>
       </div>
+      <div>
+        <p className="font-semibold">{user.following}</p>
+        <p className="text-gray-500">Following</p>
+      </div>
+      <div>
+        <p className="font-semibold">{user.public_repos}</p>
+        <p className="text-gray-500">Repos</p>
+      </div>
+    </div>
+  </div>
 
       {/* Stats Card */}
       <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
@@ -68,6 +97,7 @@ export default async function UserPage({
           <p>No repositories</p>
         )}
       </div>
+    </div>
     </div>
   );
 }
