@@ -14,6 +14,14 @@ export default async function UserPage({
   const repoRes = await fetch(`https://api.github.com/users/${username}/repos`);
   const repos = await repoRes.json();
 
+  // Sort repos by stars (descending)
+const sortedRepos = repos.sort(
+  (a: any, b: any) => b.stargazers_count - a.stargazers_count
+);
+
+// Limit to top 6 repos
+const displayRepos = sortedRepos.slice(0, 6);
+
   // Total stars
   const totalStars = repos.reduce(
     (sum: number, repo: any) => sum + repo.stargazers_count,
@@ -42,7 +50,7 @@ export default async function UserPage({
     <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
       
       {/* Profile */}
-      <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
+
 
   {/* Profile Card */}
   <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md text-center mb-8">
@@ -77,11 +85,11 @@ export default async function UserPage({
       </div>
     </div>
   </div>
-
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
       {/* Stats Card */}
-      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+      <div className="bg-white shadow-md rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Stats</h2>
-        <p>📦 Public Repos: {user.public_repos}</p>
+        <p>Public Repos: {user.public_repos}</p>
         <p>⭐ Total Stars: {totalStars}</p>
         <p>🧠 Most Used Language: {mostUsedLanguage}</p>
 
@@ -97,6 +105,35 @@ export default async function UserPage({
           <p>No repositories</p>
         )}
       </div>
+
+      {/* Repositories */}
+<div className="bg-white shadow-md rounded-lg p-6">
+  <h2 className="text-xl font-semibold mb-4">Top Repositories</h2>
+
+  {displayRepos.length > 0 ? (
+    <div className="space-y-3">
+      {displayRepos.map((repo: any) => (
+        <a
+          key={repo.id}
+          href={repo.html_url}
+          target="_blank"
+          className="block border rounded-lg p-4 hover:bg-gray-50 transition"
+        >
+          <p className="font-medium text-lg">{repo.name}</p>
+
+          <div className="flex justify-between text-sm text-gray-600 mt-2">
+            <span>⭐ {repo.stargazers_count}</span>
+            <span>forks {repo.forks_count}</span>
+            <span>🧠 {repo.language || "N/A"}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <p>No repositories found.</p>
+  )}
+</div>
+
     </div>
     </div>
   );
