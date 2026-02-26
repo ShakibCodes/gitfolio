@@ -7,6 +7,8 @@ export default async function UserPage({
 
 
 // FETCHING PART STARTS
+
+
   // Fetch user
   const userRes = await fetch(`https://api.github.com/users/${username}`);
   if (!userRes.ok) return <div>User not found</div>;
@@ -16,12 +18,33 @@ export default async function UserPage({
   const repoRes = await fetch(`https://api.github.com/users/${username}/repos`);
   const repos = await repoRes.json();
 
-  // Fetch contributions
+
+// Fetch contributions
 const contribRes = await fetch(
   `https://github-contributions-api.jogruber.de/v4/${username}`
 );
 const contribData = await contribRes.json();
-const weeks = contribData.contributions;
+
+const contributions = contribData?.contributions ?? [];
+
+// weeks transformation logic
+const weeks: any[] = [];
+let week: any[] = [];
+
+contributions.forEach((day: any, i: number) => {
+  week.push(day);
+
+  if ((i + 1) % 7 === 0) {
+    weeks.push(week);
+    week = [];
+  }
+});
+
+// push remaining days
+if (week.length) weeks.push(week);
+
+
+
 // FETCHING PART ENDS
 
 
@@ -145,7 +168,42 @@ const displayRepos = sortedRepos.slice(0, 6);
   )}
 </div>
 
+
+
+
     </div>
+
+    {/* Contribution Heatmap */}
+<div className="bg-white shadow-md rounded-lg p-6 w-full max-w-5xl mt-8 overflow-x-auto">
+  <h2 className="text-xl font-semibold mb-4">Contribution Activity</h2>
+
+  <div className="flex gap-1">
+    {weeks.map((week: any[], i: number) => (
+      <div key={i} className="flex flex-col gap-1">
+        {week.map((day: any, j: number) => (
+          <div
+            key={j}
+            title={`${day.date}: ${day.count} contributions`}
+            className="w-3 h-3 rounded-sm"
+            style={{
+              backgroundColor:
+                day.count === 0
+                  ? "#ebedf0"
+                  : day.count < 3
+                  ? "#9be9a8"
+                  : day.count < 6
+                  ? "#40c463"
+                  : day.count < 10
+                  ? "#30a14e"
+                  : "#216e39",
+            }}
+          />
+        ))}
+      </div>
+    ))}
+  </div>
+</div>
+
     </div>
   );
 }
