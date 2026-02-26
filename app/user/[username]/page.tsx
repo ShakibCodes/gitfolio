@@ -27,7 +27,6 @@ export default async function UserPage({
 
   // Most used language
   const languageCount: Record<string, number> = {};
-
   repos.forEach((repo: any) => {
     if (repo.language) {
       languageCount[repo.language] =
@@ -40,26 +39,35 @@ export default async function UserPage({
     "N/A";
 
   return (
-    <div className="text-center mt-23">
-      <h1 className="text-3xl font-bold">{user.name} (@{user.login})</h1>
+    <div className="min-h-screen flex flex-col items-center bg-gray-100 p-6">
       
-      <p>{user.bio}</p>
-    <div className="mt-20 ml-130 bg-gray-400 max-w-120">
-      <h2 className="font-bold">Stats</h2>
-      <p>Public Repos: {user.public_repos}</p>
-      <p>Total Stars: {totalStars}</p>
-      <p>Most Used Language: {mostUsedLanguage}</p>
+      {/* Profile */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">
+          {user.name} <span className="text-gray-500">(@{user.login})</span>
+        </h1>
+        <p className="text-gray-600 mt-2 max-w-xl">{user.bio}</p>
+      </div>
 
-      <h2>Top Repo</h2>
-      {topRepo ? (
-        <div>
-          <p>{topRepo.name}</p>
-          <p>⭐ {topRepo.stargazers_count}</p>
-        </div>
-      ) : (
-        <p>No repositories</p>
-      )}
-    </div>
+      {/* Stats Card */}
+      <div className="bg-white shadow-md rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4">Stats</h2>
+        <p>📦 Public Repos: {user.public_repos}</p>
+        <p>⭐ Total Stars: {totalStars}</p>
+        <p>🧠 Most Used Language: {mostUsedLanguage}</p>
+
+        <h2 className="text-xl font-semibold mt-6 mb-2">Top Repo</h2>
+        {topRepo ? (
+          <div className="border rounded p-3">
+            <p className="font-medium">{topRepo.name}</p>
+            <p className="text-sm text-gray-600">
+              ⭐ {topRepo.stargazers_count}
+            </p>
+          </div>
+        ) : (
+          <p>No repositories</p>
+        )}
+      </div>
     </div>
   );
 }
