@@ -5,6 +5,8 @@ export default async function UserPage({
 }) {
   const { username } = await params;
 
+
+// FETCHING PART STARTS
   // Fetch user
   const userRes = await fetch(`https://api.github.com/users/${username}`);
   if (!userRes.ok) return <div>User not found</div>;
@@ -13,6 +15,15 @@ export default async function UserPage({
   // Fetch repos
   const repoRes = await fetch(`https://api.github.com/users/${username}/repos`);
   const repos = await repoRes.json();
+
+  // Fetch contributions
+const contribRes = await fetch(
+  `https://github-contributions-api.jogruber.de/v4/${username}`
+);
+const contribData = await contribRes.json();
+const weeks = contribData.contributions;
+// FETCHING PART ENDS
+
 
   // Sort repos by stars (descending)
 const sortedRepos = repos.sort(
