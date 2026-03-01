@@ -1,1 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+
+/* ─── Tailwind v4 Design Tokens via @theme ─── */
+@theme {
+  /* Colors */
+  --color-accent:      #00ff88;
+  --color-accent-dim:  rgba(0, 255, 136, 0.12);
+  --color-accent-blue: #58a6ff;
+  --color-bg:          #080a0d;
+  --color-surface:     #0d1117;
+  --color-surface-2:   #161b22;
+  --color-surface-3:   #21262d;
+
+  /* Typography */
+  --font-mono:  'DM Mono', monospace;
+  --font-syne:  'Syne', sans-serif;
+
+  /* Named animations (usable as animate-* utilities) */
+  --animate-fade-up:    fadeUp 0.5s ease forwards;
+  --animate-fade-in:    fadeIn 0.4s ease forwards;
+  --animate-slide-left: slideInLeft 0.5s ease forwards;
+  --animate-slide-right:slideInRight 0.5s ease forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-blink:      blink 1s step-end infinite;
+}
+
+/* ─── Keyframes ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
+  50%       { box-shadow: 0 0 40px rgba(0, 255, 136, 0.3), 0 0 80px rgba(0, 255, 136, 0.1); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%            { transform: translateY(-4px); }
+}
+
+/* ─── Runtime CSS variables (referenced by components via var()) ─── */
+:root {
+  --border:         rgba(255, 255, 255, 0.07);
+  --border-hover:   rgba(255, 255, 255, 0.14);
+  --glow:           rgba(0, 255, 136, 0.15);
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #484f58;
+}
+
+/* ─── Base layer ─── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    background-color: #080a0d;
+    color: #e6edf3;
+    font-family: 'DM Mono', monospace;
+    height: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar        { width: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: #21262d; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+  /* Native select reset */
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+}
+
+/* ─── Custom utilities ─── */
+@layer utilities {
+  /* Subtle dot-grid background */
+  .bg-grid {
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Glass card */
+  .glass {
+    background: rgba(13, 17, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Hover lift on cards */
+  .hover-lift {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Language indicator dot */
+  .lang-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Blinking cursor */
+  .cursor-blink {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: #00ff88;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+
+  /* Accent glow shadow */
+  .glow-accent {
+    box-shadow: 0 0 20px var(--glow), 0 0 60px rgba(0, 255, 136, 0.05);
+  }
+
+  /* Animation delay helpers */
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+}
