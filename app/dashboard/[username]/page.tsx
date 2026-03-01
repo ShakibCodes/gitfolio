@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import ProfileCard from '@/components/Profilecard';
-import TopRepo from '@/components/Toprepo';      // matches file
+import ProfileCard from '@/components/ProfileCard';
+import TopRepo from '@/components/TopRepo';
 import RepoCard from '@/components/RepoCard';
 import HeatMap from '@/components/Heatmap';
 import AiChat from '@/components/Aichat';
-import LanguageBar from '@/components/Languagebar';
+import LanguageBar from '@/components/LanguageBar';
 
 
 
