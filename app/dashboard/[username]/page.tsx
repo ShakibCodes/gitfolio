@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ProfileCard from '@/components/Profilecard';
-import TopRepo from '@/components/Toprepo';
-import RepoCard from '@/components/Repocard';
+import TopRepo from '@/components/Toprepo';      // matches file
+import RepoCard from '@/components/RepoCard';
 import HeatMap from '@/components/Heatmap';
 import AiChat from '@/components/Aichat';
 import LanguageBar from '@/components/Languagebar';
+
+
 
 interface GitHubUser {
   login: string;
