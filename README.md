@@ -160,7 +160,7 @@ git push origin feat/your-feature-name
 
 ## 📄 License
 
-MIT © [Your Name](https://github.com/ShakibCodes)
+MIT © [ShakibCodes](https://github.com/ShakibCodes)
 
 ---
 
