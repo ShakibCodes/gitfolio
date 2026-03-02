@@ -1,6 +1,7 @@
 <div align="center">
 
-# 🌿 GitFolio
+
+![GitFolio landing Preview](./public/image.png)
 
 ### Transform any GitHub profile into a sleek developer dashboard
 
@@ -15,8 +16,6 @@
 **GitFolio** is a developer intelligence platform that turns any GitHub username into a rich, interactive profile dashboard — complete with repo analytics, contribution heatmaps, language breakdowns, and an AI assistant that knows everything about the developer.
 
 <br/>
-
-![GitFolio Dashboard Preview](./public/preview.png)
 
 </div>
 
