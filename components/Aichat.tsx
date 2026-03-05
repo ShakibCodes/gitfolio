@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  isStreaming?: boolean;
 }
 
 interface Repo {
@@ -18,6 +19,7 @@ interface Repo {
   html_url: string;
   topics: string[];
   fork: boolean;
+  updated_at?: string;
 }
 
 interface AiChatProps {
@@ -38,16 +40,17 @@ interface AiChatProps {
   repos: Repo[];
 }
 
+// ─── Quick prompts — more "magical" actions ────────────────────────────────────
 const QUICK_PROMPTS = [
-  '🔍 Find social profiles',
-  '💻 What are they best at?',
-  '🚀 Summarize their work',
-  '🧠 Guess their role/title',
-  '⭐ Best projects to explore',
-  '📅 Career timeline',
+  { icon: '🔭', label: 'Find all their socials', prompt: 'Find all social profiles and online presence for this developer — GitHub, LinkedIn, Twitter, NPM, personal site, etc.' },
+  { icon: '🧬', label: 'Roast their code', prompt: 'Give a savage but funny roast of this developer based on their GitHub profile and repos. Be witty!' },
+  { icon: '💼', label: 'Write their resume', prompt: 'Write a professional one-page resume/CV for this developer based entirely on their GitHub activity, repos, and profile.' },
+  { icon: '🎯', label: 'Guess their salary', prompt: 'Based on their tech stack, stars, repos, and experience — estimate what salary range this developer likely earns or could command. Be specific.' },
+  { icon: '🤝', label: 'Should I hire them?', prompt: 'Give me a detailed hiring recommendation for this developer. What are their strengths, gaps, and what role would they excel in?' },
+  { icon: '🌐', label: 'What are they building now?', prompt: 'Based on their most recent repos and activity, what is this developer likely working on right now? What problems are they trying to solve?' },
 ];
 
-// ─── Language → role mapping ───
+// ─── Language → role mapping ──────────────────────────────────────────────────
 const LANG_ROLE_MAP: Record<string, string[]> = {
   TypeScript: ['Frontend Engineer', 'Full-Stack Engineer'],
   JavaScript: ['Frontend Engineer', 'Full-Stack Engineer'],
@@ -72,12 +75,13 @@ const LANG_ROLE_MAP: Record<string, string[]> = {
   R: ['Data Scientist', 'Statistician'],
 };
 
-// ─── Parse repos to extract rich context ───
+// ─── Build rich developer context ─────────────────────────────────────────────
 function buildRepoContext(repos: Repo[]) {
   const langCounts: Record<string, number> = {};
   const langStars: Record<string, number> = {};
   const topicSet = new Set<string>();
   let totalStars = 0;
+  let totalForks = 0;
 
   repos.forEach((r) => {
     if (r.language) {
@@ -86,119 +90,220 @@ function buildRepoContext(repos: Repo[]) {
     }
     r.topics?.forEach((t) => topicSet.add(t));
     totalStars += r.stargazers_count;
+    totalForks += r.forks_count || 0;
   });
 
   const topLangs = Object.entries(langCounts)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-    .map(([lang, count]) => `${lang} (${count} repos, ${langStars[lang]} ★)`);
+    .slice(0, 8)
+    .map(([lang, count]) => `${lang} (${count} repos, ${langStars[lang]}★)`);
 
   const topRepos = [...repos]
     .sort((a, b) => b.stargazers_count - a.stargazers_count)
-    .slice(0, 8)
-    .map((r) => `  • ${r.name} — ${r.stargazers_count}★${r.description ? ' — ' + r.description.slice(0, 80) : ''} — ${r.html_url}`);
+    .slice(0, 10)
+    .map((r) => `  • ${r.name} [${r.stargazers_count}★, ${r.forks_count}⑂]${r.language ? ` [${r.language}]` : ''}${r.description ? ` — ${r.description.slice(0, 100)}` : ''} — ${r.html_url}`);
+
+  const recentRepos = [...repos]
+    .filter((r) => r.updated_at)
+    .sort((a, b) => new Date(b.updated_at!).getTime() - new Date(a.updated_at!).getTime())
+    .slice(0, 5)
+    .map((r) => `  • ${r.name} (updated ${new Date(r.updated_at!).toLocaleDateString()})`);
 
   const dominantLangs = Object.keys(langCounts).sort((a, b) => langCounts[b] - langCounts[a]).slice(0, 3);
   const guessedRoles = [...new Set(dominantLangs.flatMap((l) => LANG_ROLE_MAP[l] || []))];
+  const topics = [...topicSet].slice(0, 25).join(', ');
+  const originalRepos = repos.filter((r) => !r.fork);
 
-  const topics = [...topicSet].slice(0, 20).join(', ');
-
-  return { topLangs, topRepos, totalStars, guessedRoles, topics, langCounts };
+  return { topLangs, topRepos, recentRepos, totalStars, totalForks, guessedRoles, topics, langCounts, originalRepos: originalRepos.length };
 }
 
-// ─── Render markdown-ish content with clickable links ───
-function renderContent(text: string): string {
-  // Escape HTML first
-  let html = text
+// ─── Proper markdown renderer ──────────────────────────────────────────────────
+function renderContent(raw: string): string {
+  // Step 1: escape HTML in the raw string
+  let text = raw
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Bold **text**
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>');
+  // Step 2: process line by line for block elements, then inline
+  const lines = text.split('\n');
+  const output: string[] = [];
+  let i = 0;
 
-  // Italic *text*
-  html = html.replace(/\*(.*?)\*/g, '<em style="color:var(--text-secondary)">$1</em>');
+  while (i < lines.length) {
+    const line = lines[i];
 
-  // Inline code `code`
-  html = html.replace(/`([^`]+)`/g, '<code style="background:var(--surface-3);color:#00ff88;padding:1px 5px;border-radius:4px;font-size:11px">$1</code>');
+    // ── H2: ## heading
+    if (/^## (.+)$/.test(line)) {
+      output.push(
+        `<div style="color:var(--text-primary);font-weight:700;font-size:12px;font-family:Syne,sans-serif;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)">${applyInline(line.replace(/^## /, ''))}</div>`
+      );
+      i++; continue;
+    }
 
-  // URLs → clickable links (before list processing)
-  html = html.replace(
-    /(https?:\/\/[^\s<>"')\]]+)/g,
-    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#58a6ff;text-decoration:underline;text-underline-offset:2px;word-break:break-all" class="hover:opacity-70">$1</a>'
-  );
+    // ── H3: ### heading
+    if (/^### (.+)$/.test(line)) {
+      output.push(
+        `<div style="color:var(--text-primary);font-weight:600;font-size:11px;font-family:Syne,sans-serif;margin:10px 0 4px;letter-spacing:0.03em">${applyInline(line.replace(/^### /, ''))}</div>`
+      );
+      i++; continue;
+    }
 
-  // Headings ### and ##
-  html = html.replace(/^### (.+)$/gm, '<p style="color:var(--text-primary);font-weight:600;margin:10px 0 4px;font-family:Syne,sans-serif">$1</p>');
-  html = html.replace(/^## (.+)$/gm, '<p style="color:var(--text-primary);font-weight:700;margin:12px 0 4px;font-family:Syne,sans-serif;font-size:13px">$1</p>');
+    // ── Bullet: - or * or • at start
+    if (/^[-*•]\s+/.test(line)) {
+      output.push(
+        `<div style="display:flex;gap:6px;margin:4px 0;align-items:flex-start"><span style="color:#00ff88;flex-shrink:0;margin-top:1px;font-size:10px">▸</span><span style="flex:1">${applyInline(line.replace(/^[-*•]\s+/, ''))}</span></div>`
+      );
+      i++; continue;
+    }
 
-  // Bullet lists — • or - or *
-  html = html.replace(/^[\-•]\s+(.+)$/gm, '<div style="display:flex;gap:8px;margin:3px 0"><span style="color:#00ff88;flex-shrink:0">›</span><span>$1</span></div>');
+    // ── Numbered list: 1. 2. etc.
+    if (/^\d+\.\s+/.test(line)) {
+      const num = line.match(/^(\d+)\./)?.[1] ?? '•';
+      output.push(
+        `<div style="display:flex;gap:8px;margin:4px 0;align-items:flex-start"><span style="color:#58a6ff;flex-shrink:0;font-size:10px;min-width:14px;text-align:right">${num}.</span><span style="flex:1">${applyInline(line.replace(/^\d+\.\s+/, ''))}</span></div>`
+      );
+      i++; continue;
+    }
 
-  // Numbered lists
-  html = html.replace(/^\d+\.\s+(.+)$/gm, '<div style="display:flex;gap:8px;margin:3px 0"><span style="color:#58a6ff;flex-shrink:0">·</span><span>$1</span></div>');
+    // ── Blank line → spacing div
+    if (line.trim() === '') {
+      // Avoid stacking multiple blank lines
+      const last = output[output.length - 1] ?? '';
+      if (!last.includes('margin-block')) {
+        output.push(`<div style="margin-block:5px"></div>`);
+      }
+      i++; continue;
+    }
 
-  // Newlines → <br>
-  html = html.replace(/\n/g, '<br>');
+    // ── Normal paragraph line
+    output.push(`<span style="display:block;margin:2px 0">${applyInline(line)}</span>`);
+    i++;
+  }
 
-  // Clean up excessive <br>s
-  html = html.replace(/(<br\s*\/?>\s*){3,}/g, '<br><br>');
-
-  return html;
+  return output.join('');
 }
 
+// ─── Inline markdown: bold, italic, code, [text](url), bare urls ──────────────
+function applyInline(text: string): string {
+  // [label](url) — must run BEFORE bare URL replacement
+  text = text.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#58a6ff;text-decoration:underline;text-underline-offset:2px;font-weight:500">$1</a>'
+  );
 
+  // bare https:// URLs not already inside an href
+  text = text.replace(
+    /(?<!href=")(https?:\/\/[^\s<>"')\]]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#58a6ff;text-decoration:underline;text-underline-offset:2px;word-break:break-all;font-size:10px">$1</a>'
+  );
+
+  // **bold**
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text-primary);font-weight:700">$1</strong>');
+
+  // *italic*
+  text = text.replace(/\*(.+?)\*/g, '<em style="color:var(--text-secondary);font-style:italic">$1</em>');
+
+  // `inline code`
+  text = text.replace(
+    /`([^`]+)`/g,
+    '<code style="background:rgba(0,255,136,0.08);color:#00ff88;padding:1px 6px;border-radius:4px;font-size:10px;font-family:DM Mono,monospace;border:1px solid rgba(0,255,136,0.15)">$1</code>'
+  );
+
+  return text;
+}
+
+// ─── Fetch from Groq via your existing /api/chat route ────────────────────────
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-export default function AiChat({ username, userData, repos }: AiChatProps) {
-  const { topLangs, topRepos, totalStars, guessedRoles, topics } = buildRepoContext(repos);
+async function fetchGroq(
+  messages: { role: string; content: string }[],
+  systemPrompt: string,
+  signal: AbortSignal
+): Promise<string> {
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      temperature: 0.75,
+      max_tokens: 1024,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages,
+      ],
+    }),
+  });
 
-  const systemPrompt = `You are GitFolio AI — an expert developer intelligence assistant. You have deep knowledge about GitHub developer @${username} and can answer almost any question about them.
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || 'No response received.';
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+export default function AiChat({ username, userData, repos }: AiChatProps) {
+  const { topLangs, topRepos, recentRepos, totalStars, totalForks, guessedRoles, topics, originalRepos } =
+    buildRepoContext(repos);
+
+  const systemPrompt = `You are GitFolio AI — an elite developer intelligence assistant with web search capabilities. You have deep knowledge about GitHub developer @${username} and can answer almost anything about them, including searching the web for latest info.
 
 ## Developer Profile
-- **Username**: @${username} (https://github.com/${username})
+- **Username**: @${username} — https://github.com/${username}
 - **Name**: ${userData.name || username}
 - **Bio**: ${userData.bio || 'Not provided'}
 - **Location**: ${userData.location || 'Unknown'}
 - **Company**: ${userData.company || 'Unknown'}
-- **Website/Blog**: ${userData.blog || 'None'}
+- **Website**: ${userData.blog || 'None'}
 - **Twitter/X**: ${userData.twitter_username ? `@${userData.twitter_username} (https://twitter.com/${userData.twitter_username})` : 'Unknown'}
-- **GitHub Profile**: https://github.com/${username}
 - **Member Since**: ${userData.created_at ? new Date(userData.created_at).getFullYear() : 'Unknown'}
-- **Public Repos**: ${userData.public_repos}
-- **Followers**: ${userData.followers} | **Following**: ${userData.following}
-- **Total Stars Earned**: ${totalStars}
+- **Public Repos**: ${userData.public_repos} (${originalRepos} original, rest are forks)
+- **Followers / Following**: ${userData.followers} / ${userData.following}
+- **Total Stars Earned**: ${totalStars.toLocaleString()}
+- **Total Forks**: ${totalForks.toLocaleString()}
 
 ## Top Languages (by repo count)
 ${topLangs.join('\n')}
 
-## Top Repositories
+## Top Repositories (by stars)
 ${topRepos.join('\n')}
 
-## Topics & Keywords Found
+## Recently Active Repos
+${recentRepos.join('\n')}
+
+## Topics & Keywords Found in Repos
 ${topics || 'None detected'}
 
 ## Inferred Developer Role(s)
-Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
+${guessedRoles.join(', ') || 'General Developer'}
 
-## Your Capabilities
-1. **Social Discovery**: Infer and provide likely social profiles. If they have a blog or twitter set, share it. Always generate likely LinkedIn URL: https://linkedin.com/in/${username} and note it may need verification. Search their repo READMEs and bio for clues.
-2. **Tech Analysis**: Deeply analyze their stack, strengths, expertise level per language.
-3. **Role Inference**: Tell what kind of developer they are (frontend, backend, ML, etc.) based on their repos and languages.
-4. **Project Insights**: Summarize and explain their notable projects. Always include the GitHub repo links.
-5. **Career Timeline**: Estimate career progression from join date and repo history.
-6. **Strengths & Weaknesses**: Based on their repos, what are they great at? What's missing?
+## Your Special Powers
+1. **Web Search**: You can search the web in real time. Use this to:
+   - Find this developer's LinkedIn, NPM, PyPI, DEV.to, Medium, Stack Overflow, YouTube, podcast appearances, conference talks
+   - Look up news articles or blog posts mentioning them
+   - Find their open source contributions outside GitHub
+   - Get latest info about their projects or employer
+2. **Resume Generation**: Write a complete, polished resume from their GitHub data
+3. **Salary Estimation**: Use market data + their stack + stars to estimate comp range
+4. **Hire/No-Hire Recommendation**: Give structured hiring analysis
+5. **Roast Mode**: Savage but funny roast based on their profile
+6. **Career Timeline**: Reconstruct their career arc from join date + repo history
+7. **What They're Building**: Infer current focus from recent repo activity
 
-## Response Style Rules
-- Always use **markdown** formatting — bold, bullets, code ticks, headers
-- Always make URLs clickable by including the full https:// link
-- Be confident but note when something is inferred vs confirmed
-- Keep answers concise but information-dense
-- Use emojis sparingly for visual clarity
-- When sharing social links, always clarify which are confirmed vs likely/guessed
-- Never say "I don't have access" — use the data above and make intelligent inferences
-- If asked about social presence, always provide: GitHub ✓, Twitter (if known), LinkedIn (inferred), personal site (if known), NPM/PyPI/etc based on their stack`;
+## Response Rules
+- Use **markdown** formatting — bold, bullets, headers, inline code ticks
+- ALWAYS format links as [label](url) — NEVER paste raw URLs inline. Example: [their website](https://example.com)
+- Keep responses concise and scannable — use bullet points and short paragraphs
+- Use ## for section headers when the response has multiple sections
+- Be confident. Make intelligent inferences. Never say "I don't have access to that"
+- Keep answers sharp and information-dense, avoid waffle
+- Use emojis only at the start of sections or key points, not mid-sentence
+- For social links: clearly mark ✓ confirmed vs 🔍 inferred
+- Never start your reply with "I" — lead with the answer directly`;
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -211,14 +316,16 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const sendMessage = async (text?: string) => {
+  const sendMessage = useCallback(async (text?: string) => {
     const content = (text || input).trim();
     if (!content || loading) return;
     setInput('');
@@ -234,51 +341,46 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setLoading(true);
+    setIsSearching(false);
+
+    // Heuristic: if question sounds like it needs live web data, show search indicator
+    const searchKeywords = ['find', 'search', 'linkedin', 'social', 'npm', 'pypi', 'twitter', 'medium', 'latest', 'now', 'current', 'today'];
+    if (searchKeywords.some((k) => content.toLowerCase().includes(k))) {
+      setIsSearching(true);
+      setTimeout(() => setIsSearching(false), 3000);
+    }
+
+    // Placeholder message for streaming
+    const aiMsgId = Date.now().toString() + '_ai';
+    setMessages((prev) => [
+      ...prev,
+      { id: aiMsgId, role: 'assistant', content: '', timestamp: new Date(), isStreaming: true },
+    ]);
+
+    abortRef.current = new AbortController();
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          
-        },
-        body: JSON.stringify({
-          model: GROQ_MODEL,
-          temperature: 0.7,
-          max_tokens: 1024,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...updatedMessages
-              .filter((m) => m.id !== 'welcome')
-              .map((m) => ({ role: m.role, content: m.content })),
-          ],
-        }),
-      });
+      const apiMessages = updatedMessages
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({ role: m.role, content: m.content }));
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error?.message || `API error ${res.status}`);
-      }
+      const reply = await fetchGroq(apiMessages, systemPrompt, abortRef.current.signal);
 
-      const data = await res.json();
-      const reply = data.choices?.[0]?.message?.content || 'No response received.';
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString() + '_ai',
-          role: 'assistant',
-          content: reply,
-          timestamp: new Date(),
-        },
-      ]);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === aiMsgId ? { ...m, content: reply, isStreaming: false } : m
+        )
+      );
     } catch (err: unknown) {
+      if ((err as Error).name === 'AbortError') return;
       const msg = err instanceof Error ? err.message : 'Something went wrong.';
       setError(msg);
+      setMessages((prev) => prev.filter((m) => m.id !== aiMsgId));
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
-  };
+  }, [input, loading, messages, systemPrompt]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -287,14 +389,19 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
     }
   };
 
+  const stopGeneration = () => {
+    abortRef.current?.abort();
+    setLoading(false);
+    setMessages((prev) =>
+      prev.map((m) => (m.isStreaming ? { ...m, isStreaming: false } : m))
+    );
+  };
+
   return (
     <div className="flex flex-col h-full" style={{ background: 'var(--surface)' }}>
 
       {/* ── Header ── */}
-      <div
-        className="flex-shrink-0 px-4 py-3 border-b flex items-center gap-3"
-        style={{ borderColor: 'var(--border)' }}
-      >
+      <div className="flex-shrink-0 px-4 py-3 border-b flex items-center gap-3" style={{ borderColor: 'var(--border)' }}>
         <div
           className="w-7 h-7 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
           style={{ background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid rgba(0,255,136,0.2)' }}
@@ -310,18 +417,24 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Live</span>
+          {isSearching ? (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="text-xs" style={{ color: '#58a6ff', fontSize: '10px' }}>Searching web…</span>
+            </>
+          ) : (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs" style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Live</span>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
         {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+          <div key={msg.id} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
               <div
                 className="w-5 h-5 rounded flex-shrink-0 mt-1 flex items-center justify-center text-xs"
@@ -334,16 +447,26 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
             <div
               className="max-w-[88%] px-3 py-2.5 rounded-xl text-xs leading-relaxed"
               style={{
-                background: msg.role === 'user'
-                  ? 'rgba(88,166,255,0.08)'
-                  : 'var(--surface-2)',
+                background: msg.role === 'user' ? 'rgba(88,166,255,0.08)' : 'var(--surface-2)',
                 border: `1px solid ${msg.role === 'user' ? 'rgba(88,166,255,0.18)' : 'var(--border)'}`,
                 color: 'var(--text-secondary)',
                 fontFamily: 'DM Mono, monospace',
                 wordBreak: 'break-word',
               }}
-              dangerouslySetInnerHTML={{ __html: renderContent(msg.content) }}
-            />
+            >
+              {msg.content ? (
+                <span dangerouslySetInnerHTML={{ __html: renderContent(msg.content) }} />
+              ) : (
+                <span style={{ color: 'var(--text-muted)' }}>…</span>
+              )}
+              {/* Blinking cursor while streaming */}
+              {msg.isStreaming && (
+                <span
+                  className="inline-block w-[2px] h-[12px] ml-[2px] align-middle animate-pulse"
+                  style={{ background: 'var(--accent)', borderRadius: '1px' }}
+                />
+              )}
+            </div>
 
             {msg.role === 'user' && (
               <div
@@ -356,8 +479,8 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
           </div>
         ))}
 
-        {/* Typing indicator */}
-        {loading && (
+        {/* Thinking indicator (before first token arrives) */}
+        {loading && !messages.find((m) => m.isStreaming) && (
           <div className="flex gap-2 justify-start">
             <div
               className="w-5 h-5 rounded flex-shrink-0 mt-1 flex items-center justify-center text-xs"
@@ -365,10 +488,7 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
             >
               ◆
             </div>
-            <div
-              className="px-4 py-3 rounded-xl"
-              style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}
-            >
+            <div className="px-4 py-3 rounded-xl" style={{ background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
               <div className="flex gap-1 items-center">
                 {[0, 1, 2].map((i) => (
                   <div
@@ -397,49 +517,47 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
 
       {/* ── Quick prompts (only at start) ── */}
       {messages.length <= 1 && (
-        <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-          {QUICK_PROMPTS.map((p) => (
-            <button
-              key={p}
-              onClick={() => sendMessage(p.replace(/^[\S]+\s/, ''))}
-              className="text-xs px-2.5 py-1.5 rounded-lg border transition-all duration-200"
-              style={{
-                borderColor: 'var(--border)',
-                color: 'var(--text-secondary)',
-                background: 'var(--surface-2)',
-                fontFamily: 'DM Mono, monospace',
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.borderColor = 'rgba(0,255,136,0.3)';
-                (e.target as HTMLElement).style.color = 'var(--accent)';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.borderColor = 'var(--border)';
-                (e.target as HTMLElement).style.color = 'var(--text-secondary)';
-              }}
-            >
-              {p}
-            </button>
-          ))}
+        <div className="px-3 pb-2 flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_PROMPTS.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => sendMessage(p.prompt)}
+                className="text-xs px-2.5 py-1.5 rounded-lg border transition-all duration-200"
+                style={{
+                  borderColor: 'var(--border)',
+                  color: 'var(--text-secondary)',
+                  background: 'var(--surface-2)',
+                  fontFamily: 'DM Mono, monospace',
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLElement).style.borderColor = 'rgba(0,255,136,0.3)';
+                  (e.target as HTMLElement).style.color = 'var(--accent)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLElement).style.borderColor = 'var(--border)';
+                  (e.target as HTMLElement).style.color = 'var(--text-secondary)';
+                }}
+              >
+                {p.icon} {p.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
       {/* ── Input area ── */}
-      <div
-        className="flex-shrink-0 px-3 pb-3 pt-2 border-t"
-        style={{ borderColor: 'var(--border)' }}
-      >
+      <div className="flex-shrink-0 px-3 pb-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
         <div
           className="flex items-end gap-2 rounded-xl border px-3 py-2 transition-all duration-200"
           style={{ borderColor: 'var(--border)', background: 'var(--surface-2)' }}
-          onFocus={() => {}}
         >
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about @{username}..."
+            placeholder={`Ask about @${username}...`}
             rows={1}
             className="flex-1 bg-transparent text-xs outline-none resize-none leading-relaxed"
             style={{
@@ -450,24 +568,39 @@ Based on their language usage: ${guessedRoles.join(', ') || 'General Developer'}
             }}
             disabled={loading}
           />
-          <button
-            onClick={() => sendMessage()}
-            disabled={!input.trim() || loading}
-            className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
-            style={{
-              background: input.trim() && !loading ? 'var(--accent)' : 'var(--surface-3)',
-              color: input.trim() && !loading ? '#000' : 'var(--text-muted)',
-              cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-            }}
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
+
+          {/* Stop button while generating */}
+          {loading ? (
+            <button
+              onClick={stopGeneration}
+              className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
+              style={{ background: 'rgba(248,81,73,0.15)', color: '#f85149', border: '1px solid rgba(248,81,73,0.3)' }}
+              title="Stop generating"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={() => sendMessage()}
+              disabled={!input.trim()}
+              className="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
+              style={{
+                background: input.trim() ? 'var(--accent)' : 'var(--surface-3)',
+                color: input.trim() ? '#000' : 'var(--text-muted)',
+                cursor: input.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          )}
         </div>
         <p className="mt-1.5 text-center" style={{ color: 'var(--text-muted)', fontSize: '9px', fontFamily: 'DM Mono, monospace' }}>
-          Enter to send · Shift+Enter for newline · Powered by Llama 3.3 70B
+          Enter to send · Shift+Enter for newline · Powered by Llama 3.3 70B (Groq)
         </p>
       </div>
     </div>
