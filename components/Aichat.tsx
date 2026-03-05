@@ -397,6 +397,221 @@ ${guessedRoles.join(', ') || 'General Developer'}
     );
   };
 
+  // ── Resume generation ──────────────────────────────────────────────────────
+  const [resumeLoading, setResumeLoading] = useState(false);
+
+  const generateResume = async () => {
+    setResumeLoading(true);
+
+    const { topLangs, topRepos, guessedRoles, totalStars } = buildRepoContext(repos);
+
+    const resumePrompt = `Generate a complete, professional developer resume as structured JSON only. No explanation, no markdown, just valid JSON.
+
+The resume is for GitHub user @${username}.
+
+Profile data:
+- Name: ${userData.name || username}
+- Location: ${userData.location || 'N/A'}
+- Website: ${userData.blog || ''}
+- Twitter: ${userData.twitter_username ? '@' + userData.twitter_username : ''}
+- GitHub: https://github.com/${username}
+- Bio: ${userData.bio || ''}
+- Member since: ${userData.created_at ? new Date(userData.created_at).getFullYear() : 'Unknown'}
+- Followers: ${userData.followers} | Stars earned: ${totalStars}
+
+Top languages: ${topLangs.join(', ')}
+Inferred roles: ${guessedRoles.join(', ')}
+Top repositories:
+${topRepos.join('\n')}
+
+Return ONLY this JSON shape, nothing else:
+{
+  "name": "...",
+  "title": "...",
+  "location": "...",
+  "github": "...",
+  "website": "...",
+  "twitter": "...",
+  "summary": "2-3 sentence professional summary",
+  "skills": ["skill1", "skill2", ...],
+  "projects": [
+    { "name": "...", "description": "...", "stars": 0, "url": "...", "tech": "..." }
+  ],
+  "highlights": ["achievement1", "achievement2", ...],
+  "languages": ["Lang1", "Lang2", ...]
+}`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          max_tokens: 1500,
+          messages: [
+            { role: 'system', content: 'You are a resume generator. Always respond with valid JSON only. No markdown, no explanation.' },
+            { role: 'user', content: resumePrompt },
+          ],
+        }),
+      });
+
+      const data = await res.json();
+      let raw = data.choices?.[0]?.message?.content || '';
+      // Strip possible markdown code fences
+      raw = raw.replace(/```json|```/g, '').trim();
+      const resume = JSON.parse(raw);
+      openResumeWindow(resume);
+    } catch (err) {
+      console.error('Resume generation failed:', err);
+      alert('Resume generation failed. Try again!');
+    } finally {
+      setResumeLoading(false);
+    }
+  };
+
+  const openResumeWindow = (r: {
+    name: string; title: string; location: string; github: string;
+    website: string; twitter: string; summary: string; skills: string[];
+    projects: { name: string; description: string; stars: number; url: string; tech: string }[];
+    highlights: string[]; languages: string[];
+  }) => {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${r.name} — Resume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#fff;color:#111;font-size:13px;line-height:1.5}
+  .page{max-width:760px;margin:0 auto;padding:48px 52px}
+  /* Header */
+  .header{border-bottom:2px solid #111;padding-bottom:18px;margin-bottom:22px}
+  .header h1{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:2px}
+  .header .title{font-size:14px;color:#444;font-weight:500;margin-bottom:10px}
+  .links{display:flex;flex-wrap:wrap;gap:14px;font-size:11.5px;color:#555}
+  .links a{color:#1a56db;text-decoration:none}
+  .links span{display:flex;align-items:center;gap:4px}
+  /* Sections */
+  .section{margin-bottom:20px}
+  .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #eee}
+  /* Summary */
+  .summary{color:#333;font-size:13px;line-height:1.65}
+  /* Skills */
+  .skills-wrap{display:flex;flex-wrap:wrap;gap:6px}
+  .skill-tag{background:#f3f4f6;color:#374151;padding:3px 10px;border-radius:4px;font-size:11.5px;font-weight:500;border:1px solid #e5e7eb}
+  /* Projects */
+  .project{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0f0}
+  .project:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .project-header{display:flex;align-items:baseline;gap:10px;margin-bottom:3px}
+  .project-name{font-weight:600;font-size:13.5px}
+  .project-name a{color:#1a56db;text-decoration:none}
+  .project-stars{font-size:11px;color:#888;font-family:'JetBrains Mono',monospace}
+  .project-tech{font-size:11px;color:#6b7280;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+  .project-desc{color:#444;font-size:12.5px}
+  /* Highlights */
+  .highlight{display:flex;gap:8px;margin-bottom:6px;font-size:12.5px;color:#333}
+  .highlight::before{content:"▸";color:#1a56db;flex-shrink:0;margin-top:1px}
+  /* Languages */
+  .lang-grid{display:flex;flex-wrap:wrap;gap:6px}
+  .lang-chip{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid #d1d5db;color:#374151}
+  /* Watermark — fixed on screen, printed in footer */
+  .wm-fixed{position:fixed;bottom:20px;right:24px;display:flex;align-items:center;gap:5px;opacity:0.35;pointer-events:none;z-index:50}
+  .wm-dot{width:7px;height:7px;border-radius:50%;background:#00c96e}
+  .wm-label{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;letter-spacing:0.06em;color:#111}
+  .wm-label em{color:#00c96e;font-style:normal}
+  /* Footer watermark — only visible on print */
+  .wm-footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;display:flex;align-items:center;justify-content:flex-end;gap:5px}
+  .wm-footer-dot{width:5px;height:5px;border-radius:50%;background:#00c96e;display:inline-block}
+  .wm-footer-label{font-size:9.5px;font-weight:700;letter-spacing:0.08em;color:#bbb;text-transform:uppercase}
+  .wm-footer-label em{color:#00c96e;font-style:normal}
+  /* Print */
+  @media print{
+    body{font-size:12px}
+    .page{padding:32px 40px}
+    .no-print{display:none!important}
+    .wm-fixed{display:none}
+  }
+  /* Print button */
+  .print-bar{position:fixed;top:0;left:0;right:0;background:#1a56db;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;z-index:100}
+  .print-bar span{color:#fff;font-size:13px;font-weight:500}
+  .print-btn{background:#fff;color:#1a56db;border:none;padding:7px 18px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer}
+  .print-spacer{height:48px}
+</style>
+</head>
+<body>
+<div class="wm-fixed no-print">
+  <div class="wm-dot"></div>
+  <div class="wm-label">Git<em>Folio</em></div>
+</div>
+<div class="print-bar no-print">
+  <span>📄 ${r.name} — Resume Preview</span>
+  <button class="print-btn" onclick="window.print()">⬇ Download / Print PDF</button>
+</div>
+<div class="print-spacer no-print"></div>
+<div class="page">
+  <div class="header">
+    <h1>${r.name}</h1>
+    <div class="title">${r.title}</div>
+    <div class="links">
+      ${r.location ? `<span>📍 ${r.location}</span>` : ''}
+      ${r.github ? `<span>🐙 <a href="${r.github}" target="_blank">${r.github.replace('https://', '')}</a></span>` : ''}
+      ${r.website ? `<span>🌐 <a href="${r.website}" target="_blank">${r.website.replace(/^https?:\/\//, '')}</a></span>` : ''}
+      ${r.twitter ? `<span>✕ ${r.twitter}</span>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Summary</div>
+    <div class="summary">${r.summary}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Technical Skills</div>
+    <div class="skills-wrap">${r.skills.map((s: string) => `<span class="skill-tag">${s}</span>`).join('')}</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Open Source Projects</div>
+    ${r.projects.map((p: { name: string; description: string; stars: number; url: string; tech: string }) => `
+    <div class="project">
+      <div class="project-header">
+        <span class="project-name"><a href="${p.url}" target="_blank">${p.name}</a></span>
+        ${p.stars ? `<span class="project-stars">★ ${p.stars.toLocaleString()}</span>` : ''}
+      </div>
+      ${p.tech ? `<div class="project-tech">${p.tech}</div>` : ''}
+      <div class="project-desc">${p.description}</div>
+    </div>`).join('')}
+  </div>
+
+  ${r.highlights?.length ? `
+  <div class="section">
+    <div class="section-title">Highlights</div>
+    ${r.highlights.map((h: string) => `<div class="highlight">${h}</div>`).join('')}
+  </div>` : ''}
+
+  <div class="section">
+    <div class="section-title">Languages & Technologies</div>
+    <div class="lang-grid">${r.languages.map((l: string) => `<span class="lang-chip">${l}</span>`).join('')}</div>
+  </div>
+
+  <div class="wm-footer">
+    <div class="wm-footer-dot"></div>
+    <div class="wm-footer-label">Generated by Git<em>Folio</em></div>
+  </div>
+</div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full" style={{ background: 'var(--surface)' }}>
 
@@ -416,7 +631,34 @@ ${guessedRoles.join(', ') || 'General Developer'}
             @{username} · {repos.length} repos analysed
           </p>
         </div>
-        <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+          {/* Resume button */}
+          <button
+            onClick={generateResume}
+            disabled={resumeLoading || loading}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all duration-200 border"
+            style={{
+              borderColor: resumeLoading ? 'var(--border)' : 'rgba(0,255,136,0.3)',
+              background: resumeLoading ? 'var(--surface-2)' : 'rgba(0,255,136,0.06)',
+              color: resumeLoading ? 'var(--text-muted)' : 'var(--accent)',
+              cursor: resumeLoading || loading ? 'not-allowed' : 'pointer',
+              fontFamily: 'Syne, sans-serif',
+            }}
+            title="Generate & download resume as PDF"
+          >
+            {resumeLoading ? (
+              <>
+                <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                <span style={{ fontSize: '10px' }}>Building…</span>
+              </>
+            ) : (
+              <>
+                <span>📄</span>
+                <span style={{ fontSize: '10px' }}>Resume</span>
+              </>
+            )}
+          </button>
+
           {isSearching ? (
             <>
               <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
