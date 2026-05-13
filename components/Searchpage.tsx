@@ -167,18 +167,7 @@ export default function SearchPage() {
           )}
         </form>
 
-        {/* Feature chips */}
-        <div className="animate-fade-up delay-400 flex flex-wrap justify-center gap-2 mt-10" style={{ animationFillMode: 'both' }}>
-          {['Repo Analytics', 'Contribution Heatmap', 'Top Repository', 'AI Chat', 'Social Discovery', 'Auto Resume'].map((f) => (
-            <span
-              key={f}
-              className="px-3 py-1 text-xs rounded-full border"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
-            >
-              {f}
-            </span>
-          ))}
-        </div>
+        
       </div>
 
       {/* Bottom gradient */}
