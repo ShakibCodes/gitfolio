@@ -56,7 +56,7 @@ sindresorhus →  Open-source prolific contributor
 
 - Node.js `18+`
 - npm / yarn / pnpm
-- An Anthropic API key (for AI Chat)
+- An Groq API key (for AI Chat)
 
 ### Installation
 
@@ -87,7 +87,7 @@ gitfolio/
 ├── app/
 │   ├── api/
 │   │   └── chat/
-│   │       └── route.ts          # AI Chat API route (Anthropic)
+│   │       └── route.ts          # AI Chat API route (Groq)
 │   ├── dashboard/
 │   │   └── [username]/
 │   │       └── page.tsx          # Dynamic dashboard page
@@ -122,7 +122,7 @@ The AI assistant is loaded with full context about the developer, including thei
 "How active are they on GitHub?"
 ```
 
-The AI returns social handles as **clickable links** and gives detailed, context-aware answers powered by Claude (Anthropic).
+The AI returns social handles as **clickable links** and gives detailed, context-aware answers powered by  Llama 3.3 70B  (through Groq).
 
 ---
 
@@ -131,8 +131,8 @@ The AI returns social handles as **clickable links** and gives detailed, context
 - **Framework** — [Next.js 15](https://nextjs.org/) with App Router
 - **Language** — [TypeScript](https://www.typescriptlang.org/)
 - **Styling** — [Tailwind CSS v4](https://tailwindcss.com/) with custom `@theme` tokens
-- **AI** — [Anthropic Claude](https://www.anthropic.com/) via `/api/chat` route
-- **Data** — [GitHub REST API](https://docs.github.com/en/rest) (public, no auth required)
+- **AI** — [Groq](https://console.groq.com/docs/models) via `/api/chat` route
+- **Data** — [GitHub REST API](https://docs.github.com/en/rest)
 - **Routing** — Dynamic routes via `app/dashboard/[username]/page.tsx`
 
 ---
