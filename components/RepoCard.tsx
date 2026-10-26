@@ -1,105 +1,105 @@
 'use client';
 
-interface Repo {
-  id: number;
-  name: string;
-  description: string;
-  stargazers_count: number;
-  forks_count: number;
-  language: string;
-  html_url: string;
-  topics: string[];
-  updated_at: string;
-  open_issues_count: number;
-  fork: boolean;
-}
-
-const LANG_COLORS: Record<string, string> = {
-  TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  Python: '#3572A5',
-  Rust: '#dea584',
-  Go: '#00ADD8',
-  Java: '#b07219',
-  'C++': '#f34b7d',
-  C: '#555555',
-  Ruby: '#701516',
-  Swift: '#ffac45',
-  Kotlin: '#A97BFF',
-  CSS: '#563d7c',
-  HTML: '#e34c26',
-  Shell: '#89e051',
-  Vue: '#41b883',
-  Svelte: '#ff3e00',
-  Dart: '#00B4AB',
-};
-
-function getLangColor(lang: string) {
-  return LANG_COLORS[lang] || '#8b949e';
-}
+import { Repo } from '@/types/github';
+import { getLangColor } from '@/lib/github';
+import { Star, GitFork, ExternalLink, GitBranch, Calendar } from 'lucide-react';
 
 interface RepoCardProps {
   repo: Repo;
   index: number;
+  onSelectRepo: (repo: Repo) => void;
 }
 
-export default function RepoCard({ repo, index }: RepoCardProps) {
-  const updatedAt = new Date(repo.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+export default function RepoCard({ repo, index, onSelectRepo }: RepoCardProps) {
+  const updatedAt = new Date(repo.updated_at).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
-    <a
-      href={repo.html_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block rounded-xl border p-4 hover-lift transition-all duration-200 group"
+    <div
+      onClick={() => onSelectRepo(repo)}
+      className="glass-card-interactive rounded-xl p-4 border border-white/5 hover:border-emerald-500/30 transition-all duration-200 group cursor-pointer flex flex-col justify-between"
       style={{
-        borderColor: 'var(--border)',
-        background: 'var(--surface)',
-        animationDelay: `${index * 0.05}s`,
-        animationFillMode: 'both',
+        animationDelay: `${Math.min(0.3, index * 0.03)}s`,
       }}
     >
-      <div className="flex items-start justify-between gap-2 mb-1.5">
-        <div className="flex items-center gap-2 min-w-0">
-          {repo.fork && (
-            <span className="text-xs flex-shrink-0" style={{ color: 'var(--text-muted)' }}>⑂</span>
-          )}
-          <h3
-            className="text-sm font-medium truncate group-hover:text-blue-400 transition-colors"
-            style={{ color: 'var(--accent-blue)', fontFamily: 'DM Mono, monospace' }}
-          >
-            {repo.name}
-          </h3>
+      <div>
+        {/* Header: Name + Star count */}
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {repo.fork ? (
+              <GitFork className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+            ) : (
+              <GitBranch className="w-3.5 h-3.5 text-emerald-400/80 flex-shrink-0" />
+            )}
+            <h3 className="text-sm font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors font-mono truncate">
+              {repo.name}
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {repo.stargazers_count > 0 && (
+              <span className="flex items-center gap-1 text-xs font-mono text-amber-400">
+                <Star className="w-3 h-3 fill-amber-400" />
+                <span>
+                  {repo.stargazers_count >= 1000
+                    ? `${(repo.stargazers_count / 1000).toFixed(1)}k`
+                    : repo.stargazers_count}
+                </span>
+              </span>
+            )}
+          </div>
         </div>
-        {repo.stargazers_count > 0 && (
-          <span className="flex-shrink-0 flex items-center gap-1 text-xs" style={{ color: '#f1c40f' }}>
-            <span>★</span>
-            <span>{repo.stargazers_count >= 1000 ? `${(repo.stargazers_count / 1000).toFixed(1)}k` : repo.stargazers_count}</span>
-          </span>
+
+        {/* Description */}
+        {repo.description ? (
+          <p className="text-xs text-slate-400 leading-relaxed mb-3 line-clamp-2">
+            {repo.description}
+          </p>
+        ) : (
+          <p className="text-xs text-slate-600 italic mb-3">No description provided</p>
+        )}
+
+        {/* Topics preview */}
+        {repo.topics && repo.topics.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {repo.topics.slice(0, 3).map((topic) => (
+              <span
+                key={topic}
+                className="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 border border-white/5 text-slate-400 font-mono"
+              >
+                #{topic}
+              </span>
+            ))}
+            {repo.topics.length > 3 && (
+              <span className="text-[10px] text-slate-600 font-mono">
+                +{repo.topics.length - 3}
+              </span>
+            )}
+          </div>
         )}
       </div>
 
-      {repo.description && (
-        <p
-          className="text-xs leading-relaxed mb-3 line-clamp-2"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {repo.description}
-        </p>
-      )}
+      {/* Footer Meta */}
+      <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-white/5 font-mono">
+        <div className="flex items-center gap-3">
+          {repo.language && (
+            <span className="flex items-center gap-1.5 text-slate-300">
+              <span className="lang-dot" style={{ background: getLangColor(repo.language) }} />
+              <span className="text-[11px]">{repo.language}</span>
+            </span>
+          )}
+          {repo.forks_count > 0 && (
+            <span className="flex items-center gap-1 text-[11px]">
+              <GitFork className="w-3 h-3 text-slate-500" />
+              <span>{repo.forks_count}</span>
+            </span>
+          )}
+        </div>
 
-      <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-        {repo.language && (
-          <span className="flex items-center gap-1.5">
-            <span className="lang-dot" style={{ background: getLangColor(repo.language) }} />
-            <span>{repo.language}</span>
-          </span>
-        )}
-        {repo.forks_count > 0 && (
-          <span>⑂ {repo.forks_count}</span>
-        )}
-        <span className="ml-auto">{updatedAt}</span>
+        <span className="text-[10px] text-slate-500">{updatedAt}</span>
       </div>
-    </a>
+    </div>
   );
 }

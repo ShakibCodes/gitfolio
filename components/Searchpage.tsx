@@ -2,198 +2,322 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Search,
+  Sparkles,
+  ArrowRight,
+  TrendingUp,
+  History,
+  Swords,
+  Briefcase,
+  Bot,
+  Award,
+  CheckCircle2,
+  Code2,
+} from 'lucide-react';
+import { GithubIcon } from '@/components/Icons';
+
+const FEATURED_DEVELOPERS = [
+  {
+    handle: 'shadcn',
+    name: 'shadcn',
+    role: 'Creator of shadcn/ui',
+    stack: 'TypeScript, React',
+    avatar: 'https://github.com/shadcn.png',
+  },
+  {
+    handle: 'torvalds',
+    name: 'Linus Torvalds',
+    role: 'Creator of Linux & Git',
+    stack: 'C, Systems',
+    avatar: 'https://github.com/torvalds.png',
+  },
+  {
+    handle: 'gaearon',
+    name: 'Dan Abramov',
+    role: 'Co-creator of Redux',
+    stack: 'JavaScript, React',
+    avatar: 'https://github.com/gaearon.png',
+  },
+  {
+    handle: 'antfu',
+    name: 'Anthony Fu',
+    role: 'Vue & Vite Core Contributor',
+    stack: 'TypeScript, Vue',
+    avatar: 'https://github.com/antfu.png',
+  },
+  {
+    handle: 'sindresorhus',
+    name: 'Sindre Sorhus',
+    role: 'Prolific Open Source Titan',
+    stack: 'TypeScript, Node.js',
+    avatar: 'https://github.com/sindresorhus.png',
+  },
+];
 
 export default function SearchPage() {
   const [username, setUsername] = useState('');
   const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     inputRef.current?.focus();
+    try {
+      const saved = localStorage.getItem('gitfolio_recent_searches');
+      if (saved) {
+        setRecentSearches(JSON.parse(saved).slice(0, 6));
+      }
+    } catch {
+      // ignore storage errors
+    }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = username.trim();
+  const saveToRecent = (handle: string) => {
+    try {
+      const updated = [handle, ...recentSearches.filter((h) => h.toLowerCase() !== handle.toLowerCase())].slice(0, 6);
+      setRecentSearches(updated);
+      localStorage.setItem('gitfolio_recent_searches', JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSearch = async (targetUser?: string) => {
+    const val = (targetUser || username).trim().replace(/^@/, '');
     if (!val) return;
     setError('');
     setLoading(true);
-    // Validate username exists
+
     try {
       const res = await fetch(`https://api.github.com/users/${val}`);
       if (!res.ok) throw new Error('User not found');
+      saveToRecent(val);
       router.push(`/dashboard/${val}`);
     } catch {
-      setError('GitHub user not found. Try another username.');
+      setError(`GitHub user "@${val}" was not found. Please try another handle.`);
       setLoading(false);
     }
   };
 
   return (
-    <main className="relative min-h-screen bg-grid flex flex-col items-center justify-center overflow-hidden px-4">
-      {/* Radial glow background */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,255,136,0.07) 0%, transparent 70%)',
-        }}
-      />
+    <main className="min-h-screen bg-[#07090e] bg-grid text-slate-100 flex flex-col items-center justify-between px-4 py-8 relative overflow-hidden">
+      {/* Glow Orbs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-emerald-500/15 via-cyan-500/15 to-transparent rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Top bar */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-6 sm:px-8 py-4 sm:py-5 border-b"
-        style={{ borderColor: 'var(--border)' }}>
+      {/* Header bar */}
+      <header className="w-full max-w-6xl flex items-center justify-between py-2 relative z-10">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="font-syne text-sm font-700 tracking-widest uppercase text-white" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, letterSpacing: '0.15em' }}>
-            Git<span style={{ color: 'var(--accent)' }}>Folio</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+          <span className="font-extrabold text-base tracking-tight text-white">
+            Git<span className="text-emerald-400">Folio</span>
+          </span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 ml-1">
+            2.0
           </span>
         </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="hidden md:flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <span style={{ color: 'var(--accent)' }}>●</span>
-            <span>GitHub Developer Dashboard</span>
-          </div>
+
+        <div className="flex items-center gap-3">
           <a
             href="https://github.com/shakibCodes/gitfolio"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs transition-all duration-200 hover:border-white/30 hover:text-white hover:bg-white/5"
-            style={{
-              borderColor: 'var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--text-secondary)',
-              fontFamily: 'DM Mono, monospace',
-            }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card text-xs text-slate-300 hover:text-white border border-white/10 hover:border-emerald-500/30 transition-all font-mono"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-            </svg>
-            <span>GitHub Repo</span>
+            <GithubIcon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Star on GitHub</span>
           </a>
         </div>
       </header>
 
-      {/* Hero content */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full">
-        {/* Badge */}
-        <div
-          className="animate-fade-up mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs border"
-          style={{ borderColor: 'rgba(0,255,136,0.3)', background: 'rgba(0,255,136,0.06)', color: 'var(--accent)', animationFillMode: 'both' }}
-        >
-          <span>◆</span>
-          <span>AI-Powered GitHub Profiles</span>
-          <span>◆</span>
+      {/* Hero Section */}
+      <div className="w-full max-w-3xl flex flex-col items-center text-center my-auto py-10 relative z-10 space-y-6">
+        {/* Pill Badge */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono shadow-sm">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Next-Gen Developer Intelligence & Showcase Platform</span>
         </div>
 
-        {/* Title */}
-        <h1
-          className="animate-fade-up delay-100 mb-3 text-5xl sm:text-7xl font-800 leading-none tracking-tight"
-          style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, animationFillMode: 'both' }}
-        >
-          Git<span style={{ color: 'var(--accent)' }}>Folio</span>
+        {/* Hero Title */}
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
+          Turn Any GitHub Profile Into a{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+            High-Value Portfolio
+          </span>
         </h1>
 
-        <p
-          className="animate-fade-up delay-200 mb-10 text-sm sm:text-base leading-relaxed"
-          style={{ color: 'var(--text-secondary)', animationFillMode: 'both', fontFamily: 'DM Mono, monospace' }}
-        >
-          Transform any GitHub profile into a sleek developer dashboard.<br />
-          <span style={{ color: 'var(--text-muted)' }}>Repositories · Heatmaps · AI Insights · Social Presence</span>
+        <p className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed">
+          Unlock algorithmic developer scoring, AI hiring dossiers, instant 1-click printable resumes, and side-by-side 1v1 developer battles.
         </p>
 
-        {/* Search form */}
-        <form
-          onSubmit={handleSubmit}
-          className="animate-fade-up delay-300 w-full"
-          style={{ animationFillMode: 'both' }}
-        >
-          <div
-            className="relative flex items-center rounded-xl border transition-all duration-300"
-            style={{
-              borderColor: focused ? 'var(--accent)' : 'var(--border)',
-              background: 'var(--surface)',
-              boxShadow: focused ? '0 0 0 1px rgba(0,255,136,0.3), 0 0 30px rgba(0,255,136,0.08)' : 'none',
+        {/* Search Input Box */}
+        <div className="w-full max-w-xl">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch();
             }}
+            className="relative"
           >
-            {/* GitHub icon */}
-            <div className="pl-4 pr-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-            </div>
-
-            {/* Input */}
-            <input
-              ref={inputRef}
-              type="text"
-              value={username}
-              onChange={(e) => { setUsername(e.target.value); setError(''); }}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              placeholder="Enter GitHub username..."
-              className="flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-opacity-40"
-              style={{
-                color: 'var(--text-primary)',
-                fontFamily: 'DM Mono, monospace',
-              }}
-              disabled={loading}
-            />
-
-            {/* Submit button */}
-            <button
-              type="submit"
-              disabled={!username.trim() || loading}
-              className="mr-2 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-2"
-              style={{
-                background: username.trim() && !loading ? 'var(--accent)' : 'var(--surface-3)',
-                color: username.trim() && !loading ? '#000' : 'var(--text-muted)',
-                fontFamily: 'Syne, sans-serif',
-                fontWeight: 600,
-                cursor: username.trim() && !loading ? 'pointer' : 'not-allowed',
-              }}
+            <div
+              className={`flex items-center rounded-2xl glass-card border transition-all duration-300 p-2 ${
+                focused
+                  ? 'border-emerald-500/60 shadow-2xl shadow-emerald-500/15'
+                  : 'border-white/10 hover:border-white/20'
+              }`}
             >
-              {loading ? (
-                <>
-                  <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                  <span>Loading</span>
-                </>
-              ) : (
-                <>
-                  <span>Explore</span>
-                  <span>→</span>
-                </>
-              )}
-            </button>
+              <div className="pl-3 pr-2 text-slate-500 font-mono text-sm font-bold">
+                github.com/
+              </div>
+
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="username (e.g. shadcn)"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (error) setError('');
+                }}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                className="flex-1 bg-transparent text-sm sm:text-base text-white placeholder-slate-600 outline-none font-mono"
+              />
+
+              <button
+                type="submit"
+                disabled={loading || !username.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-slate-950 font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20"
+              >
+                {loading ? (
+                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span>Explore</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          {error && (
+            <p className="text-xs text-red-400 mt-2 font-mono text-left pl-3">
+              {error}
+            </p>
+          )}
+
+          {/* Recent Searches */}
+          {recentSearches.length > 0 && (
+            <div className="flex items-center gap-2 mt-4 flex-wrap text-left pl-1">
+              <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+                <History className="w-3 h-3" /> Recent:
+              </span>
+              {recentSearches.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => handleSearch(h)}
+                  className="text-xs font-mono px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-emerald-400 border border-white/5 transition-all"
+                >
+                  @{h}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Featured Developer Avatars */}
+        <div className="w-full pt-6">
+          <div className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Trending Open Source Titans</span>
           </div>
 
-          {/* Error */}
-          {error && (
-            <p className="mt-3 text-xs text-red-400 animate-fade-in" style={{ fontFamily: 'DM Mono, monospace' }}>
-              ✕ {error}
-            </p>
-          )}
-
-          {/* Hint */}
-          {!error && (
-            <p className="mt-3 text-xs" style={{ color: 'var(--text-muted)' }}>
-              Try: <button type="button" onClick={() => setUsername('torvalds')} className="hover:text-white transition-colors" style={{ color: 'var(--accent-blue)', fontFamily: 'DM Mono' }}>torvalds</button>,{' '}
-              <button type="button" onClick={() => setUsername('gaearon')} className="hover:text-white transition-colors" style={{ color: 'var(--accent-blue)', fontFamily: 'DM Mono' }}>gaearon</button>,{' '}
-              <button type="button" onClick={() => setUsername('sindresorhus')} className="hover:text-white transition-colors" style={{ color: 'var(--accent-blue)', fontFamily: 'DM Mono' }}>sindresorhus</button>
-            </p>
-          )}
-        </form>
-
-        
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+            {FEATURED_DEVELOPERS.map((dev) => (
+              <div
+                key={dev.handle}
+                onClick={() => handleSearch(dev.handle)}
+                className="glass-card-interactive rounded-xl p-3 border border-white/10 hover:border-emerald-500/40 text-center cursor-pointer group"
+              >
+                <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-2 border border-white/10 group-hover:border-emerald-400 transition-colors">
+                  <img
+                    src={dev.avatar}
+                    alt={dev.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h4 className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate font-mono">
+                  @{dev.handle}
+                </h4>
+                <p className="text-[10px] text-slate-400 truncate mt-0.5">{dev.role}</p>
+                <span className="text-[9px] text-emerald-400/80 font-mono block mt-1">
+                  {dev.stack}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Bottom gradient */}
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 h-32"
-        style={{ background: 'linear-gradient(to top, var(--bg), transparent)' }}
-      />
+      {/* Feature Highlights Ribbon */}
+      <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-6 border-t border-white/5 relative z-10">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Award className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-200">Developer Score 2.0</h4>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              0-100 index rating with 5-pillar velocity & consistency analysis.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <Briefcase className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-200">Showcase & Resume Mode</h4>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Transform stats into a client-ready portfolio & 1-page PDF CV.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <Swords className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-200">1v1 Developer Versus</h4>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Battle two developers head-to-head on stars, streaks, and output.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <Bot className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-slate-200">AI Intelligence Suite</h4>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Instant code roasts, salary estimates, and recruiter dossiers.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="w-full text-center text-xs text-slate-500 font-mono py-2 relative z-10">
+        GitFolio • The Developer Intelligence Platform
+      </footer>
     </main>
   );
 }

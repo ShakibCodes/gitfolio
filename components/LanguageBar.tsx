@@ -1,87 +1,95 @@
 'use client';
 
-interface Repo {
-  language: string | null;
-  stargazers_count: number;
-}
+import { Repo } from '@/types/github';
+import { LANG_COLORS, getLangColor } from '@/lib/github';
+import { Code2 } from 'lucide-react';
 
 interface LanguageBarProps {
   repos: Repo[];
+  selectedLanguage?: string;
+  onSelectLanguage?: (lang: string) => void;
 }
 
-const LANG_COLORS: Record<string, string> = {
-  TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  Python: '#3572A5',
-  Rust: '#dea584',
-  Go: '#00ADD8',
-  Java: '#b07219',
-  'C++': '#f34b7d',
-  C: '#555555',
-  Ruby: '#701516',
-  Swift: '#ffac45',
-  Kotlin: '#A97BFF',
-  CSS: '#563d7c',
-  HTML: '#e34c26',
-  Shell: '#89e051',
-  Vue: '#41b883',
-  Svelte: '#ff3e00',
-  Dart: '#00B4AB',
-};
+export default function LanguageBar({
+  repos,
+  selectedLanguage = 'All',
+  onSelectLanguage,
+}: LanguageBarProps) {
+  const counts: Record<string, { count: number; stars: number }> = {};
 
-export default function LanguageBar({ repos }: LanguageBarProps) {
-  const counts: Record<string, number> = {};
   repos.forEach((r) => {
     if (r.language) {
-      counts[r.language] = (counts[r.language] || 0) + 1;
+      if (!counts[r.language]) {
+        counts[r.language] = { count: 0, stars: 0 };
+      }
+      counts[r.language].count += 1;
+      counts[r.language].stars += r.stargazers_count || 0;
     }
   });
 
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const total = Object.values(counts).reduce((a, b) => a + b.count, 0);
   const sorted = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 8);
 
   if (sorted.length === 0) return null;
 
   return (
-    <div
-      className="rounded-2xl border p-5 animate-fade-up"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-    >
-      <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: 'Syne, sans-serif', color: 'var(--text-primary)' }}>
-        Languages
-      </h3>
-
-      {/* Bar */}
-      <div className="flex rounded-full overflow-hidden h-2 mb-4 gap-px">
-        {sorted.map(([lang, count]) => (
-          <div
-            key={lang}
-            title={`${lang}: ${((count / total) * 100).toFixed(1)}%`}
-            style={{
-              width: `${(count / total) * 100}%`,
-              background: LANG_COLORS[lang] || '#8b949e',
-              transition: 'width 0.6s ease',
-            }}
-          />
-        ))}
+    <div className="glass-card rounded-2xl p-5 border border-white/10">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <Code2 className="w-4 h-4 text-emerald-400" />
+          <span>Technology & Language Stack</span>
+        </h3>
+        <span className="text-[11px] font-mono text-slate-400">
+          {sorted.length} active languages
+        </span>
       </div>
 
-      {/* Legend */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-        {sorted.map(([lang, count]) => (
-          <div key={lang} className="flex items-center gap-2">
-            <span
-              className="lang-dot flex-shrink-0"
-              style={{ background: LANG_COLORS[lang] || '#8b949e' }}
+      {/* Segmented bar */}
+      <div className="flex rounded-full overflow-hidden h-2.5 mb-4 bg-slate-800/80 p-0.5 gap-0.5">
+        {sorted.map(([lang, data]) => {
+          const pct = Math.max(2, (data.count / total) * 100);
+          return (
+            <div
+              key={lang}
+              title={`${lang}: ${((data.count / total) * 100).toFixed(1)}% (${data.count} repos)`}
+              className="h-full rounded-sm transition-all duration-500 hover:opacity-80 cursor-pointer"
+              style={{
+                width: `${pct}%`,
+                background: getLangColor(lang),
+              }}
+              onClick={() => onSelectLanguage?.(lang)}
             />
-            <span className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>{lang}</span>
-            <span className="text-xs ml-auto flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
-              {((count / total) * 100).toFixed(0)}%
-            </span>
-          </div>
-        ))}
+          );
+        })}
+      </div>
+
+      {/* Interactive Language Badges / Legend */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {sorted.map(([lang, data]) => {
+          const pct = Math.round((data.count / total) * 100);
+          const isSelected = selectedLanguage === lang;
+
+          return (
+            <button
+              key={lang}
+              onClick={() => onSelectLanguage?.(isSelected ? 'All' : lang)}
+              className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all ${
+                isSelected
+                  ? 'bg-emerald-500/15 border-emerald-500/50 text-white shadow-sm'
+                  : 'bg-slate-900/40 border-white/5 hover:border-white/20 text-slate-300'
+              }`}
+            >
+              <span
+                className="lang-dot flex-shrink-0"
+                style={{ background: getLangColor(lang) }}
+              />
+              <span className="text-xs font-medium truncate flex-1">{lang}</span>
+              <span className="text-[11px] font-mono text-slate-500">{pct}%</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

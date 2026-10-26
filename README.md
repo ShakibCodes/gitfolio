@@ -1,19 +1,18 @@
 <div align="center">
 
+# ⚡ GitFolio 2.0 — Developer Intelligence & Showcase Platform
 
-![GitFolio landing Preview](./public/image.png)
+### Transform any GitHub profile into an executive developer portfolio, 1v1 battle arena, and AI-powered intelligence dossier.
 
-### Transform any GitHub profile into a sleek developer dashboard
-
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![GitHub API](https://img.shields.io/badge/GitHub-REST%20API-181717?style=flat-square&logo=github)](https://docs.github.com/en/rest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-00ff88?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=flat-square)](LICENSE)
 
 <br/>
 
-**GitFolio** is a developer intelligence platform that turns any GitHub username into a rich, interactive profile dashboard — complete with repo analytics, contribution heatmaps, language breakdowns, and an AI assistant that knows everything about the developer.
+**GitFolio 2.0** goes beyond generic profile viewers. It turns any GitHub username into a high-caliber intelligence dashboard, complete with algorithmic developer grading, 1v1 developer battles, a client-ready showcase portfolio with printable PDF resumes, and an intelligent AI technical recruiter and code roaster that works out-of-the-box.
 
 <br/>
 
@@ -21,54 +20,67 @@
 
 ---
 
-## ✨ Features
+## 🚀 What's New in GitFolio 2.0
 
 | Feature | Description |
 |---|---|
-| 🔍 **Profile Search** | Search any GitHub user by username with instant validation |
-| 📊 **Profile Analytics** | Followers, following, repo count, join year, bio, social links |
-| 🏆 **Top Repository** | Highlights the developer's most starred repository with topics and stats |
-| 🗂️ **Repository Explorer** | Browse all repos with search, sort (stars / forks / updated), and language filter |
-| 🟩 **Contribution Heatmap** | GitHub-style activity grid for the past year with streaks and best day stats |
-| 🎨 **Language Bar** | Visual breakdown of languages used across all public repositories |
-| 🤖 **AI Developer Chat** | Ask anything about the developer — stack, best role fit, social handles, hiring insights |
-| 🔗 **Social Discovery** | AI surfaces Twitter/X, personal site, and other handles as clickable links |
-| 💼 **Hiring Mode** | Use AI to evaluate a developer's strengths, role fit, and contribution consistency |
-| 📱 **Fully Responsive** | Mobile-first layout with a collapsible AI chat panel |
+| 🏆 **Developer Score & Tier (0–100)** | Algorithmic grading across 5 pillars: Star Power, Code Velocity, Consistency Streak, Polyglot Breadth, and Community Footprint, with tiers from C to S+. |
+| 💼 **Showcase & Printable Resume Mode** | Toggle into a client-ready developer portfolio view. Features a one-click print engine formatted for crisp, 1-page executive PDF resumes. |
+| ⚔️ **1v1 Developer Versus Mode** | Battle two developers head-to-head on scores, stars, repos, followers, and languages with dynamic winner badges. |
+| 🤖 **Dual-Engine AI Intelligence** | High-speed Llama 3.3 via Groq with an automatic deterministic fallback engine (never errors even without an API key). Includes 1-click Savage Code Roast, Salary Estimator, 1-Page Resume, and Hiring Dossier. |
+| 🔍 **Interactive Repository Deep Dive** | Click any repo to inspect full stats, topics, license, open issues, and copy one-click clone commands (`git clone`, `gh repo clone`, SSH). |
+| 🎨 **Interactive Tech Stack Bar** | Click any language in the stack bar to instantly filter all repositories. |
+| 🟩 **Annual Activity & Streak Radar** | 365-day calendar heatmap tracking longest streak, active streak, and peak single day. |
+| ⌨️ **Command Palette (Cmd+K / Ctrl+K)** | Instant Raycast-style keyboard shortcut navigation to switch users, jump to repos, or trigger actions. |
+| 🚀 **README & Embed Badge Exporter** | Generate embeddable Markdown badges and HTML snippets ready to paste into your GitHub `README.md`. |
+| 💎 **Cyber-Glass Design System** | Modern dark mode with neon accents, smooth hover-lifts, confetti celebrations, and responsive drawers. |
 
 ---
 
-## 🖥️ Demo
-
-Try these profiles to see GitFolio in action:
+## 🖥️ Featured Developers to Explore
 
 ```
-torvalds    →  Creator of Linux & Git
-gaearon     →  Creator of React
-sindresorhus →  Open-source prolific contributor
+shadcn       →  Creator of shadcn/ui
+torvalds     →  Creator of Linux & Git
+gaearon      →  Co-creator of Redux & React Core
+antfu        →  Vue & Vite Core Contributor
+sindresorhus →  Open-source prolific titan
 ```
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework** — [Next.js 16](https://nextjs.org/) with App Router and Turbopack
+- **Language** — [TypeScript 5](https://www.typescriptlang.org/)
+- **Styling** — [Tailwind CSS v4](https://tailwindcss.com/) with custom `@theme` tokens
+- **Icons** — [Lucide React](https://lucide.dev/)
+- **Effects** — Canvas Confetti
+- **AI** — Groq (Llama 3.3) with local deterministic heuristic fallback
+- **Data** — GitHub REST & GraphQL API
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- Node.js `18+`
-- npm / yarn / pnpm
-- An Groq API key (for AI Chat)
-
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/ShakibCodes/gitfolio.git
 cd gitfolio
-
-# Install dependencies
 npm install
 ```
 
+### Environment Variables (Optional)
+
+Create a `.env.local` file if you want live Groq AI or higher GitHub GraphQL limits:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+GITHUB_TOKEN=your_personal_github_token_here
+```
+
+*(Note: GitFolio functions completely with full intelligence and analytics even without these keys!)*
 
 ### Run Locally
 
@@ -80,92 +92,6 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🗂️ Project Structure
-
-```
-gitfolio/
-├── app/
-│   ├── api/
-│   │   └── chat/
-│   │       └── route.ts          # AI Chat API route (Groq)
-│   ├── dashboard/
-│   │   └── [username]/
-│   │       └── page.tsx          # Dynamic dashboard page
-│   ├── globals.css               # Design tokens, animations, utilities
-│   ├── layout.tsx                # Root layout with font imports
-│   └── page.tsx                  # Home / Search page
-│
-├── components/
-│   ├── Aichat.tsx                # AI chat panel with streaming
-│   ├── Heatmap.tsx               # Contribution activity heatmap
-│   ├── LanguageBar.tsx           # Language usage breakdown bar
-│   ├── ProfileCard.tsx           # User profile stats card
-│   ├── RepoCard.tsx              # Individual repository card
-│   ├── Searchpage.tsx            # Landing / search UI
-│   └── TopRepo.tsx               # Highlighted top repository card
-│
-
-```
-
----
-
-## 🤖 AI Chat Capabilities
-
-The AI assistant is loaded with full context about the developer, including their repos, bio, languages, follower count, and more. You can ask it things like:
-
-```
-"What is this developer best at?"
-"What role would they fit — frontend, backend, or fullstack?"
-"Do they have a Twitter or personal website?"
-"Would you recommend hiring them for a Python project?"
-"What's their most impressive repository?"
-"How active are they on GitHub?"
-```
-
-The AI returns social handles as **clickable links** and gives detailed, context-aware answers powered by  Llama 3.3 70B  (through Groq).
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework** — [Next.js 15](https://nextjs.org/) with App Router
-- **Language** — [TypeScript](https://www.typescriptlang.org/)
-- **Styling** — [Tailwind CSS v4](https://tailwindcss.com/) with custom `@theme` tokens
-- **AI** — [Groq](https://console.groq.com/docs/models) via `/api/chat` route
-- **Data** — [GitHub REST API](https://docs.github.com/en/rest)
-- **Routing** — Dynamic routes via `app/dashboard/[username]/page.tsx`
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how to get started:
-
-```bash
-# Fork the repo, then:
-git checkout -b feat/your-feature-name
-git commit -m "feat: add your feature"
-git push origin feat/your-feature-name
-# Open a Pull Request
-```
-
-**Ideas for contributions:**
-- GitHub API auth to increase rate limits
-- Export profile as PDF / Resume
-- Pinned repositories support
-- Org profile support
-- Dark/light theme toggle
-
----
-
 ## 📄 License
 
 MIT © [ShakibCodes](https://github.com/ShakibCodes)
-
----
-
-<div align="center">
-
-**[⭐ Star this repo](https://github.com/ShakibCodes/gitfolio)** if you find it useful!
-
-</div>
