@@ -6,13 +6,10 @@ import { generateSmartAiResponse } from '@/lib/github';
 import {
   Bot,
   Send,
-  Sparkles,
   X,
   Copy,
   Check,
   User,
-  Zap,
-  RefreshCw,
   Flame,
   FileText,
   DollarSign,
@@ -39,31 +36,26 @@ const QUICK_ACTIONS = [
   {
     icon: Flame,
     label: 'Roast Code',
-    color: 'text-orange-400',
     prompt: 'Give a savage but funny roast of this developer based on their GitHub profile and repos.',
   },
   {
     icon: FileText,
     label: '1-Page Resume',
-    color: 'text-emerald-400',
     prompt: 'Write an executive 1-page developer resume and CV based on their GitHub repos and activity.',
   },
   {
     icon: DollarSign,
     label: 'Salary Estimate',
-    color: 'text-amber-400',
     prompt: 'Estimate the market salary range and seniority level for this developer based on their stack and stars.',
   },
   {
     icon: Briefcase,
     label: 'Hiring Verdict',
-    color: 'text-blue-400',
     prompt: 'Provide a detailed hiring recommendation and top interview questions for this developer.',
   },
   {
     icon: Compass,
     label: 'Social Footprint',
-    color: 'text-purple-400',
     prompt: 'Find all their social links, online handles, and summarize their public presence.',
   },
 ];
@@ -73,14 +65,14 @@ export default function AiChat({ username, user, repos, metrics, onClose }: AiCh
     {
       id: 'welcome',
       role: 'assistant',
-      content: `### 🤖 GitFolio Developer Intelligence Loaded
-I have indexed **@${user.login}**'s GitHub footprint:
-- **Index Rating:** ${metrics.score}/100 (${metrics.tier}-Tier)
+      content: `### GitFolio Intelligence Dossier
+Indexed **@${user.login}**:
+- **Rating:** ${metrics.score}/100 (${metrics.tier}-Tier)
 - **Archetype:** ${metrics.archetype}
-- **Volume:** ${metrics.totalStars.toLocaleString()}★ stars across ${user.public_repos} repositories
+- **Volume:** ${metrics.totalStars.toLocaleString()}★ stars across ${user.public_repos} repos
 - **Primary Stack:** ${metrics.primaryLanguage}
 
-Click one of the prompt chips below or ask me anything!`,
+Select a quick action below or ask any technical or hiring inquiry.`,
       timestamp: new Date(),
     },
   ]);
@@ -113,7 +105,6 @@ Click one of the prompt chips below or ask me anything!`,
     setLoading(true);
 
     try {
-      // Send to server API route
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,7 +113,7 @@ Click one of the prompt chips below or ask me anything!`,
           messages: [
             {
               role: 'system',
-              content: `You are GitFolio AI, an expert technical recruiter, engineering leader, and developer analyst. Developer username: ${user.login}. Name: ${user.name || user.login}. Bio: ${user.bio}. Repos: ${user.public_repos}. Stars: ${metrics.totalStars}. Primary language: ${metrics.primaryLanguage}. Score: ${metrics.score}/100. Archetype: ${metrics.archetype}.`,
+              content: `You are GitFolio AI, an expert technical recruiter and developer analyst. Developer: @${user.login}. Name: ${user.name || user.login}. Repos: ${user.public_repos}. Stars: ${metrics.totalStars}. Language: ${metrics.primaryLanguage}. Score: ${metrics.score}/100. Archetype: ${metrics.archetype}. Keep response structured, professional, and clear.`,
             },
             { role: 'user', content: text },
           ],
@@ -142,7 +133,6 @@ Click one of the prompt chips below or ask me anything!`,
           },
         ]);
       } else {
-        // Fallback to local heuristic intelligence
         const localResponse = generateSmartAiResponse(text, user, repos, metrics);
         setMessages((prev) => [
           ...prev,
@@ -155,7 +145,6 @@ Click one of the prompt chips below or ask me anything!`,
         ]);
       }
     } catch {
-      // Local fallback on network error
       const localResponse = generateSmartAiResponse(text, user, repos, metrics);
       setMessages((prev) => [
         ...prev,
@@ -178,26 +167,23 @@ Click one of the prompt chips below or ask me anything!`,
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950/95 border-l border-white/10 glass-card">
+    <div className="flex flex-col h-full bg-black border-l border-neutral-800 font-sans">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-900/60">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800 bg-neutral-950">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            <Bot className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5 font-mono">
-              <span>GitFolio AI Assistant</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </h3>
-            <span className="text-[10px] text-slate-400">Contextual Developer Intelligence</span>
-          </div>
+          <Bot className="w-4 h-4 text-neutral-400" />
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono">
+            AI Assistant
+          </h3>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border border-neutral-800 text-neutral-500">
+            Llama 3.3
+          </span>
         </div>
 
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            className="p-1 rounded text-neutral-500 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -205,7 +191,7 @@ Click one of the prompt chips below or ask me anything!`,
       </div>
 
       {/* Quick Prompt Chips */}
-      <div className="px-3 py-2 border-b border-white/5 bg-slate-900/30 overflow-x-auto flex gap-1.5">
+      <div className="px-3 py-2 border-b border-neutral-900 bg-neutral-950/60 overflow-x-auto flex gap-1.5">
         {QUICK_ACTIONS.map((action) => {
           const Icon = action.icon;
           return (
@@ -213,16 +199,16 @@ Click one of the prompt chips below or ask me anything!`,
               key={action.label}
               onClick={() => handleSend(action.prompt)}
               disabled={loading}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 text-[11px] text-slate-300 font-mono flex-shrink-0 transition-all hover:border-emerald-500/30"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-neutral-800 hover:border-neutral-700 bg-neutral-900 text-[11px] text-neutral-400 hover:text-white font-mono flex-shrink-0 transition-colors"
             >
-              <Icon className={`w-3 h-3 ${action.color}`} />
+              <Icon className="w-3 h-3 text-neutral-400" />
               <span>{action.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Messages Container */}
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div
@@ -230,45 +216,43 @@ Click one of the prompt chips below or ask me anything!`,
             className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'assistant' && (
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/30">
+              <div className="w-6 h-6 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Bot className="w-3.5 h-3.5" />
               </div>
             )}
 
             <div
-              className={`relative max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed ${
+              className={`relative max-w-[85%] rounded-lg p-3 text-xs leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-emerald-500/20 text-emerald-100 border border-emerald-500/30 rounded-tr-none'
-                  : 'bg-slate-900/80 text-slate-200 border border-white/10 rounded-tl-none shadow-md'
+                  ? 'bg-neutral-800 text-white font-mono'
+                  : 'bg-neutral-950 border border-neutral-800 text-neutral-300'
               }`}
             >
-              {/* Copy message button */}
               {msg.role === 'assistant' && (
                 <button
                   onClick={() => copyToClipboard(msg.id, msg.content)}
-                  className="absolute top-2 right-2 p-1 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                  className="absolute top-2 right-2 p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-white transition-colors"
                   title="Copy response"
                 >
                   {copiedId === msg.id ? (
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-white" />
                   ) : (
                     <Copy className="w-3 h-3" />
                   )}
                 </button>
               )}
 
-              {/* Render content */}
-              <div className="prose prose-invert prose-xs max-w-none space-y-2 whitespace-pre-wrap font-sans">
+              <div className="whitespace-pre-wrap font-sans space-y-2">
                 {msg.content}
               </div>
 
-              <span className="text-[10px] text-slate-500 font-mono block mt-2 text-right">
+              <span className="text-[10px] text-neutral-600 font-mono block mt-2 text-right">
                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
 
             {msg.role === 'user' && (
-              <div className="w-6 h-6 rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center flex-shrink-0 mt-0.5 border border-white/10">
+              <div className="w-6 h-6 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <User className="w-3.5 h-3.5" />
               </div>
             )}
@@ -277,12 +261,12 @@ Click one of the prompt chips below or ask me anything!`,
 
         {loading && (
           <div className="flex gap-3 justify-start">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 border border-emerald-500/30">
+            <div className="w-6 h-6 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 flex items-center justify-center flex-shrink-0 mt-0.5">
               <Bot className="w-3.5 h-3.5" />
             </div>
-            <div className="rounded-2xl rounded-tl-none p-3 bg-slate-900/80 border border-white/10 flex items-center gap-2 text-xs text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Analyzing GitHub graph & synthesizing response...</span>
+            <div className="rounded-lg p-3 bg-neutral-950 border border-neutral-800 flex items-center gap-2 text-xs text-neutral-500 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span>Analyzing profile...</span>
             </div>
           </div>
         )}
@@ -290,8 +274,8 @@ Click one of the prompt chips below or ask me anything!`,
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input bar */}
-      <div className="p-3 border-t border-white/10 bg-slate-900/50">
+      {/* Input */}
+      <div className="p-3 border-t border-neutral-800 bg-neutral-950">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -301,18 +285,18 @@ Click one of the prompt chips below or ask me anything!`,
         >
           <input
             type="text"
-            placeholder="Ask about tech stack, hiring advice, code quality..."
+            placeholder="Ask anything about this profile..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={loading}
-            className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500/50 transition-colors font-mono"
+            className="flex-1 px-3 py-2 rounded-md bg-neutral-900 border border-neutral-800 text-xs text-white placeholder-neutral-500 outline-none focus:border-neutral-600 transition-colors font-mono"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-slate-950 font-bold transition-all shadow-md shadow-emerald-500/20"
+            className="p-2 rounded-md bg-white hover:bg-neutral-200 disabled:opacity-30 text-black font-medium transition-colors"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </form>
       </div>

@@ -12,7 +12,6 @@ import {
   Check,
   Terminal,
   FolderGit2,
-  Calendar,
   AlertCircle,
   Globe,
   Tag,
@@ -54,59 +53,59 @@ export default function RepoDetailModal({ repo, onClose }: RepoDetailModalProps)
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in font-sans">
       <div
-        className="relative w-full max-w-2xl glass-card rounded-2xl border border-white/15 p-6 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-2xl rounded-xl border border-neutral-800 bg-neutral-950 p-6 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 p-1.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Header */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mb-2">
-          <FolderGit2 className="w-4 h-4 text-emerald-400" />
+        <div className="flex items-center gap-2 text-xs text-neutral-500 font-mono mb-2">
+          <FolderGit2 className="w-3.5 h-3.5 text-neutral-400" />
           <span>Repository Dossier</span>
           {repo.fork && (
-            <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">
-              Forked
+            <span className="px-1.5 py-0.2 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 text-[10px]">
+              Fork
             </span>
           )}
           {repo.archived && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px]">
+            <span className="px-1.5 py-0.2 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 text-[10px]">
               Archived
             </span>
           )}
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-100 font-mono mb-2 break-all">
+        <h2 className="text-xl font-bold text-white font-mono mb-2 break-all">
           {repo.name}
         </h2>
 
         {repo.description ? (
-          <p className="text-sm text-slate-300 leading-relaxed mb-5">
+          <p className="text-sm text-neutral-400 leading-relaxed mb-5">
             {repo.description}
           </p>
         ) : (
-          <p className="text-sm text-slate-500 italic mb-5">
-            No repository description provided.
+          <p className="text-sm text-neutral-600 italic mb-5">
+            No description provided.
           </p>
         )}
 
-        {/* Quick Links (Homepage / GitHub) */}
+        {/* Links */}
         <div className="flex flex-wrap gap-2 mb-6">
           <a
             href={repo.html_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium transition-all"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-800 hover:border-neutral-700 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-mono transition-colors"
           >
             <span>View on GitHub</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-3 h-3" />
           </a>
 
           {repo.homepage && (
@@ -114,89 +113,79 @@ export default function RepoDetailModal({ repo, onClose }: RepoDetailModalProps)
               href={repo.homepage.startsWith('http') ? repo.homepage : `https://${repo.homepage}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-medium transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-800 hover:border-neutral-700 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 text-xs font-mono transition-colors"
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Live Website</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <Globe className="w-3 h-3" />
+              <span>Website</span>
+              <ExternalLink className="w-3 h-3" />
             </a>
           )}
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-white/5">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1 mb-1">
-              <Star className="w-3 h-3 text-amber-400" /> Stars
-            </span>
-            <span className="text-lg font-bold font-mono text-slate-100">
+          <div className="p-3 rounded-lg border border-neutral-900 bg-neutral-900/40 font-mono">
+            <span className="text-[11px] text-neutral-500 block mb-1">Stars</span>
+            <span className="text-lg font-bold text-white">
               {repo.stargazers_count.toLocaleString()}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-white/5">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1 mb-1">
-              <GitFork className="w-3 h-3 text-slate-400" /> Forks
-            </span>
-            <span className="text-lg font-bold font-mono text-slate-100">
+          <div className="p-3 rounded-lg border border-neutral-900 bg-neutral-900/40 font-mono">
+            <span className="text-[11px] text-neutral-500 block mb-1">Forks</span>
+            <span className="text-lg font-bold text-white">
               {repo.forks_count.toLocaleString()}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-white/5">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1 mb-1">
-              <AlertCircle className="w-3 h-3 text-slate-400" /> Open Issues
-            </span>
-            <span className="text-lg font-bold font-mono text-slate-100">
+          <div className="p-3 rounded-lg border border-neutral-900 bg-neutral-900/40 font-mono">
+            <span className="text-[11px] text-neutral-500 block mb-1">Issues</span>
+            <span className="text-lg font-bold text-white">
               {repo.open_issues_count.toLocaleString()}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-900/80 border border-white/5">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1 mb-1">
-              <Tag className="w-3 h-3 text-slate-400" /> Size
-            </span>
-            <span className="text-lg font-bold font-mono text-slate-100">
-              {formattedSize}
-            </span>
+          <div className="p-3 rounded-lg border border-neutral-900 bg-neutral-900/40 font-mono">
+            <span className="text-[11px] text-neutral-500 block mb-1">Disk Size</span>
+            <span className="text-lg font-bold text-white">{formattedSize}</span>
           </div>
         </div>
 
         {/* Clone Command Box */}
-        <div className="mb-6">
+        <div className="mb-6 font-mono">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Clone Repository</span>
+            <span className="text-xs text-neutral-400 flex items-center gap-1.5">
+              <Terminal className="w-3.5 h-3.5 text-neutral-500" />
+              <span>Clone</span>
             </span>
 
-            <div className="flex rounded-lg bg-slate-900 p-0.5 border border-white/10 text-[11px] font-mono">
+            <div className="flex rounded bg-neutral-900 p-0.5 border border-neutral-800 text-[11px]">
               <button
                 onClick={() => setCloneType('https')}
-                className={`px-2 py-0.5 rounded-md ${
+                className={`px-2 py-0.5 rounded ${
                   cloneType === 'https'
-                    ? 'bg-emerald-500/20 text-emerald-300 font-bold'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-neutral-800 text-white font-medium'
+                    : 'text-neutral-500 hover:text-white'
                 }`}
               >
                 HTTPS
               </button>
               <button
                 onClick={() => setCloneType('ssh')}
-                className={`px-2 py-0.5 rounded-md ${
+                className={`px-2 py-0.5 rounded ${
                   cloneType === 'ssh'
-                    ? 'bg-emerald-500/20 text-emerald-300 font-bold'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-neutral-800 text-white font-medium'
+                    : 'text-neutral-500 hover:text-white'
                 }`}
               >
                 SSH
               </button>
               <button
                 onClick={() => setCloneType('cli')}
-                className={`px-2 py-0.5 rounded-md ${
+                className={`px-2 py-0.5 rounded ${
                   cloneType === 'cli'
-                    ? 'bg-emerald-500/20 text-emerald-300 font-bold'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-neutral-800 text-white font-medium'
+                    : 'text-neutral-500 hover:text-white'
                 }`}
               >
                 CLI
@@ -204,13 +193,13 @@ export default function RepoDetailModal({ repo, onClose }: RepoDetailModalProps)
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-white/10 font-mono text-xs text-slate-300">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-black border border-neutral-800 text-xs text-neutral-300">
             <span className="truncate pr-3">{cloneCommands[cloneType]}</span>
             <button
               onClick={() => handleCopy(cloneCommands[cloneType])}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all flex-shrink-0"
+              className="flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-800 hover:bg-neutral-700 text-white transition-colors flex-shrink-0"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3 h-3 text-neutral-200" /> : <Copy className="w-3 h-3" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
           </div>
@@ -219,14 +208,14 @@ export default function RepoDetailModal({ repo, onClose }: RepoDetailModalProps)
         {/* Topics */}
         {repo.topics && repo.topics.length > 0 && (
           <div className="mb-6">
-            <span className="text-xs font-semibold text-slate-300 block mb-2">
-              Topics & Tags
+            <span className="text-xs font-mono text-neutral-500 block mb-2">
+              Topics
             </span>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 font-mono">
               {repo.topics.map((t) => (
                 <span
                   key={t}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-white/10 text-cyan-300 font-mono"
+                  className="text-xs px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400"
                 >
                   #{t}
                 </span>
@@ -236,18 +225,20 @@ export default function RepoDetailModal({ repo, onClose }: RepoDetailModalProps)
         )}
 
         {/* Metadata Footer */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-4 border-t border-white/5 font-mono">
+        <div className="flex items-center justify-between text-xs text-neutral-500 pt-4 border-t border-neutral-900 font-mono">
           <div className="flex items-center gap-3">
             {repo.language && (
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <span className="lang-dot" style={{ background: getLangColor(repo.language) }} />
+              <span className="flex items-center gap-1.5 text-neutral-300">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: getLangColor(repo.language) }}
+                />
                 <span>{repo.language}</span>
               </span>
             )}
             {repo.license && (
-              <span className="flex items-center gap-1 text-slate-400">
-                <Shield className="w-3.5 h-3.5 text-slate-500" />
-                <span>{repo.license.spdx_id || repo.license.name}</span>
+              <span className="text-neutral-400">
+                {repo.license.spdx_id || repo.license.name}
               </span>
             )}
           </div>

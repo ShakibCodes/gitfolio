@@ -2,18 +2,8 @@
 
 import { useState } from 'react';
 import { GitHubUser, Repo, DevMetrics } from '@/types/github';
-import { calculateMetrics, getLangColor } from '@/lib/github';
-import {
-  Swords,
-  Trophy,
-  ArrowRight,
-  Star,
-  Users,
-  FolderGit2,
-  Award,
-  ExternalLink,
-  X,
-} from 'lucide-react';
+import { calculateMetrics } from '@/lib/github';
+import { Swords, X } from 'lucide-react';
 
 interface VersusModeProps {
   currentUser: GitHubUser;
@@ -58,7 +48,7 @@ export default function VersusMode({
       setOpponentUser(uData);
       setOpponentMetrics(metrics);
     } catch {
-      setError('Could not fetch opponent profile. Please check the username.');
+      setError('Could not locate user profile.');
     } finally {
       setLoading(false);
     }
@@ -67,43 +57,36 @@ export default function VersusMode({
   const getWinner = (val1: number, val2: number) => {
     if (val1 > val2) return 1;
     if (val2 > val1) return 2;
-    return 0; // tie
+    return 0;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in font-sans">
       <div
-        className="relative w-full max-w-4xl glass-card rounded-3xl border border-white/15 p-6 sm:p-8 shadow-2xl max-h-[92vh] overflow-y-auto"
+        className="relative w-full max-w-3xl rounded-xl border border-neutral-800 bg-neutral-950 p-6 sm:p-8 shadow-2xl max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-5 right-5 p-1.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Title */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-red-500/20 text-amber-400 border border-amber-500/30">
-            <Swords className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-              <span>Developer Versus Mode (1v1)</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
-                BATTLE
-              </span>
-            </h2>
-            <p className="text-xs text-slate-400">
-              Benchmark two GitHub developers head-to-head on score, stars, output, and impact.
-            </p>
-          </div>
+        <div className="flex items-center gap-2.5 mb-6">
+          <Swords className="w-4 h-4 text-neutral-400" />
+          <h2 className="text-base font-semibold text-white">
+            Developer Versus Mode
+          </h2>
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-400">
+            Head-to-Head
+          </span>
         </div>
 
         {/* Search Opponent Box */}
-        <div className="glass-card rounded-2xl p-4 border border-white/10 mb-6">
+        <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/50 mb-6">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -113,24 +96,23 @@ export default function VersusMode({
           >
             <input
               type="text"
-              placeholder="Enter GitHub username to battle..."
+              placeholder="Enter GitHub username to compare..."
               value={opponentName}
               onChange={(e) => setOpponentName(e.target.value)}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono text-white placeholder-slate-500 outline-none focus:border-amber-500/50"
+              className="flex-1 px-3 py-2 rounded-md bg-neutral-900 border border-neutral-800 text-xs font-mono text-white placeholder-neutral-500 outline-none focus:border-neutral-600"
             />
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600 text-slate-950 font-bold text-xs transition-all flex items-center justify-center gap-2"
+              className="px-4 py-2 rounded-md bg-white hover:bg-neutral-200 text-black font-medium text-xs font-mono transition-colors"
             >
-              <Swords className="w-4 h-4" />
-              <span>{loading ? 'Analyzing...' : 'Start Battle'}</span>
+              {loading ? 'Evaluating...' : 'Compare'}
             </button>
           </form>
 
-          {/* Quick presets */}
+          {/* Presets */}
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            <span className="text-[11px] font-mono text-slate-500">Quick Match:</span>
+            <span className="text-[11px] font-mono text-neutral-500">Quick Match:</span>
             {PRESET_OPPONENTS.map((handle) => (
               <button
                 key={handle}
@@ -138,14 +120,14 @@ export default function VersusMode({
                   setOpponentName(handle);
                   handleCompare(handle);
                 }}
-                className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5 transition-all"
+                className="text-[11px] font-mono px-2 py-0.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
               >
                 @{handle}
               </button>
             ))}
           </div>
 
-          {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
+          {error && <p className="text-xs text-neutral-400 mt-2 font-mono">{error}</p>}
         </div>
 
         {/* Comparison Arena */}
@@ -153,107 +135,93 @@ export default function VersusMode({
           <div className="space-y-6">
             {/* Fighter Avatars Header */}
             <div className="grid grid-cols-2 gap-4 items-center relative">
-              {/* Left Fighter */}
-              <div className="glass-card rounded-2xl p-4 border border-emerald-500/30 text-center relative overflow-hidden">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden mx-auto border-2 border-emerald-400 shadow-lg shadow-emerald-500/10 mb-2">
+              <div className="rounded-lg p-4 border border-neutral-800 bg-neutral-900/30 text-center">
+                <div className="w-14 h-14 rounded-full overflow-hidden mx-auto border border-neutral-700 mb-2">
                   <img src={currentUser.avatar_url} alt={currentUser.login} className="w-full h-full object-cover" />
                 </div>
-                <h3 className="text-base font-bold text-white truncate font-mono">@{currentUser.login}</h3>
-                <span className="text-xs text-emerald-400 font-mono font-bold block">{currentMetrics.tier}-TIER</span>
-                <span className="text-[10px] text-slate-400 block truncate">{currentMetrics.archetype}</span>
+                <h3 className="text-sm font-semibold text-white truncate font-mono">@{currentUser.login}</h3>
+                <span className="text-xs text-neutral-300 font-mono font-bold block">{currentMetrics.tier}-TIER</span>
+                <span className="text-[11px] text-neutral-500 block truncate">{currentMetrics.archetype}</span>
               </div>
 
-              {/* Center VS Stamp */}
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-slate-950 border-2 border-amber-500 text-amber-400 flex items-center justify-center font-black text-xs shadow-xl font-mono">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 px-2 py-0.5 rounded bg-black border border-neutral-700 text-neutral-400 font-mono text-xs font-bold">
                 VS
               </div>
 
-              {/* Right Fighter */}
-              <div className="glass-card rounded-2xl p-4 border border-red-500/30 text-center relative overflow-hidden">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden mx-auto border-2 border-red-400 shadow-lg shadow-red-500/10 mb-2">
+              <div className="rounded-lg p-4 border border-neutral-800 bg-neutral-900/30 text-center">
+                <div className="w-14 h-14 rounded-full overflow-hidden mx-auto border border-neutral-700 mb-2">
                   <img src={opponentUser.avatar_url} alt={opponentUser.login} className="w-full h-full object-cover" />
                 </div>
-                <h3 className="text-base font-bold text-white truncate font-mono">@{opponentUser.login}</h3>
-                <span className="text-xs text-red-400 font-mono font-bold block">{opponentMetrics.tier}-TIER</span>
-                <span className="text-[10px] text-slate-400 block truncate">{opponentMetrics.archetype}</span>
+                <h3 className="text-sm font-semibold text-white truncate font-mono">@{opponentUser.login}</h3>
+                <span className="text-xs text-neutral-300 font-mono font-bold block">{opponentMetrics.tier}-TIER</span>
+                <span className="text-[11px] text-neutral-500 block truncate">{opponentMetrics.archetype}</span>
               </div>
             </div>
 
-            {/* Head-to-head metrics battle table */}
-            <div className="glass-card rounded-2xl border border-white/10 divide-y divide-white/5 overflow-hidden text-xs font-mono">
-              {/* Score */}
-              <div className="p-3.5 grid grid-cols-3 items-center">
-                <div className={`text-left font-bold text-sm ${getWinner(currentMetrics.score, opponentMetrics.score) === 1 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {currentMetrics.score}/100 {getWinner(currentMetrics.score, opponentMetrics.score) === 1 && '👑'}
+            {/* Metrics table */}
+            <div className="rounded-lg border border-neutral-800 bg-neutral-900/30 divide-y divide-neutral-800 overflow-hidden text-xs font-mono">
+              <div className="p-3 grid grid-cols-3 items-center">
+                <div className={`text-left font-bold ${getWinner(currentMetrics.score, opponentMetrics.score) === 1 ? 'text-white' : 'text-neutral-400'}`}>
+                  {currentMetrics.score}/100 {getWinner(currentMetrics.score, opponentMetrics.score) === 1 && '✓'}
                 </div>
-                <div className="text-center text-slate-400">Dev Score</div>
-                <div className={`text-right font-bold text-sm ${getWinner(currentMetrics.score, opponentMetrics.score) === 2 ? 'text-red-400' : 'text-slate-300'}`}>
-                  {getWinner(currentMetrics.score, opponentMetrics.score) === 2 && '👑 '} {opponentMetrics.score}/100
-                </div>
-              </div>
-
-              {/* Stars */}
-              <div className="p-3.5 grid grid-cols-3 items-center">
-                <div className={`text-left font-bold ${getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 1 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {currentMetrics.totalStars.toLocaleString()}★ {getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 1 && '👑'}
-                </div>
-                <div className="text-center text-slate-400">Total Stars</div>
-                <div className={`text-right font-bold ${getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 2 ? 'text-red-400' : 'text-slate-300'}`}>
-                  {getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 2 && '👑 '} {opponentMetrics.totalStars.toLocaleString()}★
+                <div className="text-center text-neutral-500">Dev Score</div>
+                <div className={`text-right font-bold ${getWinner(currentMetrics.score, opponentMetrics.score) === 2 ? 'text-white' : 'text-neutral-400'}`}>
+                  {getWinner(currentMetrics.score, opponentMetrics.score) === 2 && '✓ '} {opponentMetrics.score}/100
                 </div>
               </div>
 
-              {/* Repos */}
-              <div className="p-3.5 grid grid-cols-3 items-center">
-                <div className={`text-left font-bold ${getWinner(currentUser.public_repos, opponentUser.public_repos) === 1 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {currentUser.public_repos} {getWinner(currentUser.public_repos, opponentUser.public_repos) === 1 && '👑'}
+              <div className="p-3 grid grid-cols-3 items-center">
+                <div className={`text-left font-bold ${getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 1 ? 'text-white' : 'text-neutral-400'}`}>
+                  {currentMetrics.totalStars.toLocaleString()}★ {getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 1 && '✓'}
                 </div>
-                <div className="text-center text-slate-400">Public Repos</div>
-                <div className={`text-right font-bold ${getWinner(currentUser.public_repos, opponentUser.public_repos) === 2 ? 'text-red-400' : 'text-slate-300'}`}>
-                  {getWinner(currentUser.public_repos, opponentUser.public_repos) === 2 && '👑 '} {opponentUser.public_repos}
-                </div>
-              </div>
-
-              {/* Followers */}
-              <div className="p-3.5 grid grid-cols-3 items-center">
-                <div className={`text-left font-bold ${getWinner(currentUser.followers, opponentUser.followers) === 1 ? 'text-emerald-400' : 'text-slate-300'}`}>
-                  {currentUser.followers.toLocaleString()} {getWinner(currentUser.followers, opponentUser.followers) === 1 && '👑'}
-                </div>
-                <div className="text-center text-slate-400">Followers</div>
-                <div className={`text-right font-bold ${getWinner(currentUser.followers, opponentUser.followers) === 2 ? 'text-red-400' : 'text-slate-300'}`}>
-                  {getWinner(currentUser.followers, opponentUser.followers) === 2 && '👑 '} {opponentUser.followers.toLocaleString()}
+                <div className="text-center text-neutral-500">Total Stars</div>
+                <div className={`text-right font-bold ${getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 2 ? 'text-white' : 'text-neutral-400'}`}>
+                  {getWinner(currentMetrics.totalStars, opponentMetrics.totalStars) === 2 && '✓ '} {opponentMetrics.totalStars.toLocaleString()}★
                 </div>
               </div>
 
-              {/* Primary Language */}
-              <div className="p-3.5 grid grid-cols-3 items-center">
-                <div className="text-left text-slate-200">
+              <div className="p-3 grid grid-cols-3 items-center">
+                <div className={`text-left font-bold ${getWinner(currentUser.public_repos, opponentUser.public_repos) === 1 ? 'text-white' : 'text-neutral-400'}`}>
+                  {currentUser.public_repos} {getWinner(currentUser.public_repos, opponentUser.public_repos) === 1 && '✓'}
+                </div>
+                <div className="text-center text-neutral-500">Public Repos</div>
+                <div className={`text-right font-bold ${getWinner(currentUser.public_repos, opponentUser.public_repos) === 2 ? 'text-white' : 'text-neutral-400'}`}>
+                  {getWinner(currentUser.public_repos, opponentUser.public_repos) === 2 && '✓ '} {opponentUser.public_repos}
+                </div>
+              </div>
+
+              <div className="p-3 grid grid-cols-3 items-center">
+                <div className={`text-left font-bold ${getWinner(currentUser.followers, opponentUser.followers) === 1 ? 'text-white' : 'text-neutral-400'}`}>
+                  {currentUser.followers.toLocaleString()} {getWinner(currentUser.followers, opponentUser.followers) === 1 && '✓'}
+                </div>
+                <div className="text-center text-neutral-500">Followers</div>
+                <div className={`text-right font-bold ${getWinner(currentUser.followers, opponentUser.followers) === 2 ? 'text-white' : 'text-neutral-400'}`}>
+                  {getWinner(currentUser.followers, opponentUser.followers) === 2 && '✓ '} {opponentUser.followers.toLocaleString()}
+                </div>
+              </div>
+
+              <div className="p-3 grid grid-cols-3 items-center">
+                <div className="text-left text-neutral-300">
                   {currentMetrics.primaryLanguage}
                 </div>
-                <div className="text-center text-slate-400">Primary Stack</div>
-                <div className="text-right text-slate-200">
+                <div className="text-center text-neutral-500">Primary Stack</div>
+                <div className="text-right text-neutral-300">
                   {opponentMetrics.primaryLanguage}
                 </div>
               </div>
             </div>
 
-            {/* Verdict Card */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-red-500/10 border border-amber-500/30 text-center">
-              <span className="text-xs uppercase font-mono tracking-wider text-amber-400 font-bold block mb-1">
-                Battle Outcome
-              </span>
-              <p className="text-sm text-slate-200 font-medium">
-                {currentMetrics.score > opponentMetrics.score
-                  ? `🏆 @${currentUser.login} holds the higher GitFolio developer index with superior overall output and tier ranking!`
-                  : currentMetrics.score < opponentMetrics.score
-                  ? `🏆 @${opponentUser.login} takes the lead with higher overall developer metrics!`
-                  : `⚔️ It's a dead heat! Both developers match in index scoring and engineering capability.`}
-              </p>
+            <div className="p-3 rounded-lg border border-neutral-800 bg-neutral-900/50 text-center font-mono text-xs text-neutral-300">
+              {currentMetrics.score > opponentMetrics.score
+                ? `@${currentUser.login} holds the higher developer index rating.`
+                : currentMetrics.score < opponentMetrics.score
+                ? `@${opponentUser.login} holds the higher developer index rating.`
+                : `Both developers hold equivalent index rating metrics.`}
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 text-slate-500 text-xs font-mono">
-            Type an opponent username above or pick one of the quick presets to initiate the comparison.
+          <div className="text-center py-10 text-neutral-500 text-xs font-mono">
+            Enter a GitHub handle above to benchmark against @{currentUser.login}.
           </div>
         )}
       </div>

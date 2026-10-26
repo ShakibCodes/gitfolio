@@ -4,15 +4,12 @@ import { useRouter } from 'next/navigation';
 import { GitHubUser } from '@/types/github';
 import {
   Search,
-  Sparkles,
   Swords,
   Share2,
   Bot,
-  ExternalLink,
   ArrowLeft,
   LayoutDashboard,
   Briefcase,
-  Command,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -39,71 +36,77 @@ export default function Navbar({
   const router = useRouter();
 
   return (
-    <nav className="sticky top-0 z-40 glass-card border-b border-white/10 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+    <nav className="sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-neutral-800 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 font-sans">
       {/* Left: Brand + Back */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => router.push('/')}
-          className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors group"
+          className="flex items-center gap-2 text-neutral-400 hover:text-white transition-colors"
+          title="Back to search"
         >
-          <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/25 transition-all">
-            <ArrowLeft className="w-4 h-4" />
+          <div className="w-6 h-6 rounded border border-neutral-800 bg-neutral-950 flex items-center justify-center text-neutral-300 hover:border-neutral-700">
+            <ArrowLeft className="w-3.5 h-3.5" />
           </div>
-          <span className="font-bold text-sm tracking-tight text-white hidden sm:inline">
-            Git<span className="text-emerald-400">Folio</span>
-          </span>
+          <div className="flex items-center gap-1.5 hidden sm:flex">
+            <svg viewBox="0 0 76 65" fill="currentColor" className="w-3 h-3 text-white">
+              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+            </svg>
+            <span className="font-semibold text-xs tracking-tight text-white">
+              GitFolio
+            </span>
+          </div>
         </button>
 
         {/* User Pill */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 border border-white/10 text-xs font-mono">
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded border border-neutral-800 bg-neutral-950 text-xs font-mono">
           <img
             src={user.avatar_url}
             alt={user.login}
-            className="w-4 h-4 rounded-full"
+            className="w-3.5 h-3.5 rounded-full"
           />
-          <span className="text-slate-200 font-semibold truncate max-w-[120px] sm:max-w-[180px]">
-            @{user.login}
+          <span className="text-neutral-200 truncate max-w-[120px] sm:max-w-[180px]">
+            {user.login}
           </span>
         </div>
       </div>
 
       {/* Center: View Switcher (Dashboard vs Portfolio) */}
-      <div className="hidden md:flex rounded-xl bg-slate-900/90 p-1 border border-white/10 text-xs font-mono">
+      <div className="flex rounded-md bg-neutral-950 p-0.5 border border-neutral-800 text-xs font-mono">
         <button
           onClick={() => setViewMode('dashboard')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
             viewMode === 'dashboard'
-              ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-neutral-800 text-white font-medium'
+              : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
-          <LayoutDashboard className="w-3.5 h-3.5" />
+          <LayoutDashboard className="w-3 h-3" />
           <span>Dashboard</span>
         </button>
 
         <button
           onClick={() => setViewMode('portfolio')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded transition-colors ${
             viewMode === 'portfolio'
-              ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-neutral-800 text-white font-medium'
+              : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
-          <Briefcase className="w-3.5 h-3.5" />
-          <span>Showcase Portfolio</span>
+          <Briefcase className="w-3 h-3" />
+          <span>Portfolio</span>
         </button>
       </div>
 
       {/* Right Actions */}
       <div className="flex items-center gap-2">
-        {/* Cmd+K trigger button */}
+        {/* Search / Command trigger */}
         <button
           onClick={onOpenCommandPalette}
-          className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 text-xs font-mono transition-all"
+          className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded border border-neutral-800 bg-neutral-950 hover:border-neutral-700 text-neutral-400 hover:text-white text-xs font-mono transition-colors"
         >
-          <Search className="w-3.5 h-3.5" />
-          <span>Search or Command</span>
-          <kbd className="px-1.5 py-0.2 rounded bg-slate-900 border border-white/10 text-[10px] text-slate-400">
+          <Search className="w-3 h-3" />
+          <span className="text-[11px]">Command</span>
+          <kbd className="px-1 py-0.2 rounded bg-neutral-900 border border-neutral-800 text-[10px] text-neutral-400">
             ⌘K
           </kbd>
         </button>
@@ -111,30 +114,28 @@ export default function Navbar({
         {/* Versus Battle Button */}
         <button
           onClick={onOpenVersus}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-mono transition-all font-medium"
-          title="Battle another developer"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-neutral-800 bg-neutral-950 hover:border-neutral-700 text-neutral-300 hover:text-white text-xs font-mono transition-colors"
         >
-          <Swords className="w-3.5 h-3.5 text-amber-400" />
+          <Swords className="w-3 h-3 text-neutral-400" />
           <span className="hidden sm:inline">Versus</span>
         </button>
 
         {/* Export Badges Button */}
         <button
           onClick={onOpenExport}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-mono transition-all"
-          title="Export profile badges & embeds"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-neutral-800 bg-neutral-950 hover:border-neutral-700 text-neutral-300 hover:text-white text-xs font-mono transition-colors"
         >
-          <Share2 className="w-3.5 h-3.5 text-slate-400" />
+          <Share2 className="w-3 h-3 text-neutral-400" />
           <span className="hidden sm:inline">Export</span>
         </button>
 
-        {/* AI Chat Button */}
+        {/* AI Assistant Button */}
         <button
           onClick={() => setAiOpen(!aiOpen)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-mono transition-colors ${
             aiOpen
-              ? 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
-              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+              ? 'bg-white text-black font-medium'
+              : 'border border-neutral-800 bg-neutral-950 hover:border-neutral-700 text-neutral-300 hover:text-white'
           }`}
         >
           <Bot className="w-3.5 h-3.5" />

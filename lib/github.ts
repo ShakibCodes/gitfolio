@@ -2,37 +2,37 @@ import { GitHubUser, Repo, ContributionData, DevMetrics } from '@/types/github';
 
 export const LANG_COLORS: Record<string, string> = {
   TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  Python: '#3572A5',
-  Rust: '#dea584',
-  Go: '#00ADD8',
+  JavaScript: '#d4b830',
+  Python: '#4b8bbe',
+  Rust: '#b77353',
+  Go: '#29beb0',
   Java: '#b07219',
-  'C++': '#f34b7d',
-  C: '#555555',
-  'C#': '#178600',
-  Ruby: '#701516',
-  Swift: '#ffac45',
-  Kotlin: '#A97BFF',
-  CSS: '#563d7c',
-  HTML: '#e34c26',
-  Shell: '#89e051',
-  Vue: '#41b883',
-  Svelte: '#ff3e00',
-  Dart: '#00B4AB',
-  PHP: '#4F5D95',
-  Solidity: '#AA6746',
-  Scala: '#c22d40',
-  Elixir: '#6e4a7e',
-  Haskell: '#5e5086',
-  Lua: '#000080',
-  Jupyter: '#DA5B0B',
-  Zig: '#ec915c',
-  OCaml: '#3be133',
+  'C++': '#c2416b',
+  C: '#6b7280',
+  'C#': '#22863a',
+  Ruby: '#991b1b',
+  Swift: '#ea580c',
+  Kotlin: '#7c3aed',
+  CSS: '#6366f1',
+  HTML: '#c2410c',
+  Shell: '#4b5563',
+  Vue: '#10b981',
+  Svelte: '#f97316',
+  Dart: '#0891b2',
+  PHP: '#6366f1',
+  Solidity: '#71717a',
+  Scala: '#991b1b',
+  Elixir: '#7e22ce',
+  Haskell: '#475569',
+  Lua: '#1d4ed8',
+  Jupyter: '#c2410c',
+  Zig: '#d97706',
+  OCaml: '#059669',
 };
 
 export function getLangColor(lang: string | null | undefined): string {
-  if (!lang) return '#8b949e';
-  return LANG_COLORS[lang] || '#8b949e';
+  if (!lang) return '#737373';
+  return LANG_COLORS[lang] || '#737373';
 }
 
 export function calculateMetrics(

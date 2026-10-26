@@ -3,16 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Repo } from '@/types/github';
 import RepoCard from './RepoCard';
-import {
-  Search,
-  Filter,
-  ArrowUpDown,
-  LayoutGrid,
-  List,
-  GitBranch,
-  Star,
-  ExternalLink,
-} from 'lucide-react';
+import { Search, LayoutGrid, List, Star } from 'lucide-react';
 
 interface RepoExplorerProps {
   repos: Repo[];
@@ -34,7 +25,6 @@ export default function RepoExplorer({
   const [showForks, setShowForks] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Languages list
   const allLanguages = useMemo(() => {
     const set = new Set<string>();
     repos.forEach((r) => {
@@ -43,7 +33,6 @@ export default function RepoExplorer({
     return ['All', ...Array.from(set).sort()];
   }, [repos]);
 
-  // Filtered & sorted repos
   const filteredRepos = useMemo(() => {
     return repos
       .filter((r) => {
@@ -65,101 +54,87 @@ export default function RepoExplorer({
   }, [repos, selectedLanguage, search, showForks, sortBy]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Controls Bar */}
-      <div className="glass-card rounded-2xl p-4 border border-white/10 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        {/* Left: Search input */}
+      <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Search */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search repositories by name, topic, or description..."
+            placeholder="Search repositories..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500/50 transition-colors font-mono"
+            className="w-full pl-8 pr-4 py-1.5 rounded-md bg-neutral-900 border border-neutral-800 text-xs text-white placeholder-neutral-500 outline-none focus:border-neutral-600 transition-colors font-mono"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-neutral-500 hover:text-white"
             >
               Clear
             </button>
           )}
         </div>
 
-        {/* Right: Filters & View Modes */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Language filter select */}
-          <div className="relative flex items-center">
-            <select
-              value={selectedLanguage}
-              onChange={(e) => onSelectLanguage(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-300 outline-none focus:border-emerald-500/50 cursor-pointer"
-            >
-              {allLanguages.map((lang) => (
-                <option key={lang} value={lang} className="bg-slate-900 text-slate-200">
-                  {lang === 'All' ? 'All Languages' : lang}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Filters */}
+        <div className="flex items-center gap-2 flex-wrap font-mono">
+          <select
+            value={selectedLanguage}
+            onChange={(e) => onSelectLanguage(e.target.value)}
+            className="px-2.5 py-1.5 rounded-md bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 outline-none cursor-pointer hover:border-neutral-700"
+          >
+            {allLanguages.map((lang) => (
+              <option key={lang} value={lang} className="bg-black text-neutral-200">
+                {lang === 'All' ? 'All Languages' : lang}
+              </option>
+            ))}
+          </select>
 
-          {/* Sort Select */}
-          <div className="relative flex items-center">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="px-3 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-xs text-slate-300 outline-none focus:border-emerald-500/50 cursor-pointer"
-            >
-              <option value="stars" className="bg-slate-900 text-slate-200">
-                Most Stars
-              </option>
-              <option value="updated" className="bg-slate-900 text-slate-200">
-                Recently Updated
-              </option>
-              <option value="forks" className="bg-slate-900 text-slate-200">
-                Most Forks
-              </option>
-              <option value="name" className="bg-slate-900 text-slate-200">
-                Repository Name
-              </option>
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="px-2.5 py-1.5 rounded-md bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 outline-none cursor-pointer hover:border-neutral-700"
+          >
+            <option value="stars" className="bg-black text-neutral-200">
+              Stars
+            </option>
+            <option value="updated" className="bg-black text-neutral-200">
+              Updated
+            </option>
+            <option value="forks" className="bg-black text-neutral-200">
+              Forks
+            </option>
+            <option value="name" className="bg-black text-neutral-200">
+              Name
+            </option>
+          </select>
 
-          {/* Toggle Forks Button */}
           <button
             onClick={() => setShowForks(!showForks)}
-            className={`px-3 py-2 rounded-xl text-xs border transition-all ${
+            className={`px-2.5 py-1.5 rounded-md text-xs border transition-colors ${
               !showForks
-                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-medium'
-                : 'bg-slate-900/80 border-white/10 text-slate-400 hover:text-slate-200'
+                ? 'bg-neutral-800 border-neutral-600 text-white'
+                : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
             }`}
           >
-            {showForks ? 'Forks: On' : 'Forks: Hidden'}
+            {showForks ? 'Forks: On' : 'Forks: Off'}
           </button>
 
-          {/* View mode toggle */}
-          <div className="hidden sm:flex rounded-xl bg-slate-900/80 p-0.5 border border-white/10">
+          <div className="hidden sm:flex rounded-md bg-neutral-900 p-0.5 border border-neutral-800">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg ${
-                viewMode === 'grid'
-                  ? 'bg-white/10 text-white'
-                  : 'text-slate-500 hover:text-slate-300'
+              className={`p-1.5 rounded ${
+                viewMode === 'grid' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-neutral-300'
               }`}
-              title="Grid view"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg ${
-                viewMode === 'list'
-                  ? 'bg-white/10 text-white'
-                  : 'text-slate-500 hover:text-slate-300'
+              className={`p-1.5 rounded ${
+                viewMode === 'list' ? 'bg-neutral-800 text-white' : 'text-neutral-500 hover:text-neutral-300'
               }`}
-              title="List view"
             >
               <List className="w-3.5 h-3.5" />
             </button>
@@ -168,33 +143,33 @@ export default function RepoExplorer({
       </div>
 
       {/* Counter summary */}
-      <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+      <div className="flex items-center justify-between text-xs text-neutral-500 px-1 font-mono">
         <span>
-          Showing <strong>{filteredRepos.length}</strong> of {repos.length} repositories
+          Showing {filteredRepos.length} of {repos.length} repositories
         </span>
         {selectedLanguage !== 'All' && (
           <button
             onClick={() => onSelectLanguage('All')}
-            className="text-emerald-400 hover:underline"
+            className="text-neutral-300 hover:underline"
           >
             Reset filter ({selectedLanguage})
           </button>
         )}
       </div>
 
-      {/* Grid or List of Repos */}
+      {/* Grid or List */}
       {filteredRepos.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center border border-white/10">
-          <p className="text-sm text-slate-400 mb-2">No matching repositories found</p>
+        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-12 text-center">
+          <p className="text-sm text-neutral-400 mb-2">No matching repositories found</p>
           <button
             onClick={() => {
               setSearch('');
               onSelectLanguage('All');
               setShowForks(true);
             }}
-            className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/20"
+            className="text-xs px-3 py-1.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-300 font-mono hover:text-white"
           >
-            Reset all search filters
+            Reset filters
           </button>
         </div>
       ) : viewMode === 'grid' ? (
@@ -209,33 +184,33 @@ export default function RepoExplorer({
           ))}
         </div>
       ) : (
-        <div className="glass-card rounded-2xl border border-white/10 divide-y divide-white/5 overflow-hidden">
+        <div className="rounded-xl border border-neutral-800 bg-neutral-950 divide-y divide-neutral-900 overflow-hidden">
           {filteredRepos.map((repo) => (
             <div
               key={repo.id}
               onClick={() => onSelectRepo(repo)}
-              className="p-3.5 hover:bg-white/5 transition-colors cursor-pointer flex items-center justify-between gap-4"
+              className="p-3.5 hover:bg-neutral-900/50 transition-colors cursor-pointer flex items-center justify-between gap-4"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-slate-100 hover:text-emerald-400 font-mono truncate">
+                  <h4 className="text-sm font-semibold text-neutral-200 hover:text-white font-mono truncate">
                     {repo.name}
                   </h4>
                   {repo.language && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 border border-white/10 text-slate-400 font-mono">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded border border-neutral-800 bg-neutral-900 text-neutral-400 font-mono">
                       {repo.language}
                     </span>
                   )}
                 </div>
                 {repo.description && (
-                  <p className="text-xs text-slate-400 truncate mt-0.5">{repo.description}</p>
+                  <p className="text-xs text-neutral-500 truncate mt-0.5">{repo.description}</p>
                 )}
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-slate-400 font-mono flex-shrink-0">
+              <div className="flex items-center gap-3 text-xs text-neutral-400 font-mono flex-shrink-0">
                 {repo.stargazers_count > 0 && (
-                  <span className="flex items-center gap-1 text-amber-400">
-                    <Star className="w-3 h-3 fill-amber-400" />
+                  <span className="flex items-center gap-1">
+                    <Star className="w-3 h-3 text-neutral-400" />
                     <span>{repo.stargazers_count}</span>
                   </span>
                 )}

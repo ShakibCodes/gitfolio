@@ -1,36 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-accent:      #10b981;
-  --color-accent-hover:#059669;
-  --color-accent-dim:  rgba(16, 185, 129, 0.12);
-  --color-accent-cyan: #06b6d4;
-  --color-accent-blue: #3b82f6;
-  --color-accent-purple:#8b5cf6;
-  --color-accent-amber:#f59e0b;
-  
-  --color-bg:          #07090e;
-  --color-surface:     #0d111a;
-  --color-surface-2:   #131a27;
-  --color-surface-3:   #1a2436;
+  /* Vercel Design System Theme Tokens */
+  --color-bg:          #000000;
+  --color-surface:     #0a0a0a;
+  --color-surface-2:   #121212;
+  --color-surface-3:   #1a1a1a;
+  --color-surface-4:   #242424;
 
-  /* Typography */
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --color-border:      rgba(255, 255, 255, 0.08);
+  --color-border-hover:rgba(255, 255, 255, 0.16);
 
-  /* Animations */
-  --animate-fade-up:    fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-fade-in:    fadeIn 0.3s ease forwards;
-  --animate-scale-in:   scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  --animate-pulse-slow: pulseSlow 3s ease-in-out infinite;
-  --animate-shimmer:    shimmer 2.2s infinite linear;
-}
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  --animate-fade-in:  fadeIn 0.2s ease-out forwards;
+  --animate-fade-up:  fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -38,29 +24,19 @@
   to   { opacity: 1; }
 }
 
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulseSlow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 :root {
-  --border:         rgba(255, 255, 255, 0.08);
-  --border-hover:   rgba(255, 255, 255, 0.18);
-  --glow-emerald:   rgba(16, 185, 129, 0.2);
-  --glow-cyan:      rgba(6, 182, 212, 0.2);
-  --text-primary:   #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted:     #64748b;
+  --bg: #000000;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.24);
+  --text-primary: #ededed;
+  --text-secondary: #a1a1a1;
+  --text-muted: #666666;
 }
 
 @layer base {
@@ -71,86 +47,93 @@
   }
 
   html, body {
-    background-color: #07090e;
-    color: #f8fafc;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #000000;
+    color: #ededed;
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     min-height: 100%;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
   }
 
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Geist Mono', monospace;
+    letter-spacing: -0.02em;
   }
 
-  /* Custom scrollbar */
+  /* Sleek minimalist scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
-    background: transparent;
+    background: #000000;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1e293b;
-    border-radius: 4px;
+    background: #262626;
+    border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: #404040;
   }
 }
 
 @layer utilities {
+  /* Subtle Vercel dot grid */
   .bg-grid {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  .glass-card {
-    background: rgba(13, 17, 26, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
+  /* Vercel-style hairline card */
+  .vercel-card {
+    background-color: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .vercel-card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
   }
 
-  .glass-card-interactive {
-    background: rgba(13, 17, 26, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  .vercel-card-interactive {
+    background-color: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .glass-card-interactive:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px var(--glow-emerald);
+  .vercel-card-interactive:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: #111111;
   }
 
-  .neon-border-green {
-    box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 25px rgba(16, 185, 129, 0.15);
+  /* Vercel primary & secondary buttons */
+  .btn-primary {
+    background-color: #ededed;
+    color: #000000;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+  }
+  .btn-primary:hover {
+    background-color: #ffffff;
   }
 
-  .neon-border-blue {
-    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4), 0 0 25px rgba(59, 130, 246, 0.15);
+  .btn-secondary {
+    background-color: #121212;
+    color: #ededed;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.15s ease;
   }
-
-  .lang-dot {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .btn-secondary:hover {
+    background-color: #1a1a1a;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
   }
 }
 
-/* Print Styles for Developer Resume Mode */
 @media print {
   body {
     background: #ffffff !important;
-    color: #1e293b !important;
+    color: #000000 !important;
   }
   .no-print {
     display: none !important;
@@ -158,10 +141,9 @@
   .print-only {
     display: block !important;
   }
-  .glass-card {
+  .vercel-card {
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-    box-shadow: none !important;
+    border: 1px solid #e5e5e5 !important;
+    color: #000000 !important;
   }
 }

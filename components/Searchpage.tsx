@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search,
-  Sparkles,
   ArrowRight,
   TrendingUp,
   History,
@@ -12,8 +11,7 @@ import {
   Briefcase,
   Bot,
   Award,
-  CheckCircle2,
-  Code2,
+  Terminal,
 } from 'lucide-react';
 import { GithubIcon } from '@/components/Icons';
 
@@ -49,7 +47,7 @@ const FEATURED_DEVELOPERS = [
   {
     handle: 'sindresorhus',
     name: 'Sindre Sorhus',
-    role: 'Prolific Open Source Titan',
+    role: 'Open Source Contributor',
     stack: 'TypeScript, Node.js',
     avatar: 'https://github.com/sindresorhus.png',
   },
@@ -57,7 +55,6 @@ const FEATURED_DEVELOPERS = [
 
 export default function SearchPage() {
   const [username, setUsername] = useState('');
-  const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -98,63 +95,60 @@ export default function SearchPage() {
       saveToRecent(val);
       router.push(`/dashboard/${val}`);
     } catch {
-      setError(`GitHub user "@${val}" was not found. Please try another handle.`);
+      setError(`GitHub user "${val}" was not found.`);
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#07090e] bg-grid text-slate-100 flex flex-col items-center justify-between px-4 py-8 relative overflow-hidden">
-      {/* Glow Orbs */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-tr from-emerald-500/15 via-cyan-500/15 to-transparent rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Header bar */}
-      <header className="w-full max-w-6xl flex items-center justify-between py-2 relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
-          <span className="font-extrabold text-base tracking-tight text-white">
-            Git<span className="text-emerald-400">Folio</span>
+    <main className="min-h-screen bg-black text-neutral-200 flex flex-col justify-between px-6 py-6 font-sans">
+      {/* Top Bar */}
+      <header className="w-full max-w-5xl mx-auto flex items-center justify-between py-2 border-b border-neutral-900 pb-4">
+        <div className="flex items-center gap-2.5">
+          {/* Vercel-style clean triangle symbol */}
+          <div className="w-4 h-4 flex items-center justify-center">
+            <svg viewBox="0 0 76 65" fill="currentColor" className="w-3.5 h-3.5 text-white">
+              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+            </svg>
+          </div>
+          <span className="font-semibold text-sm tracking-tight text-white">
+            GitFolio
           </span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 ml-1">
+          <span className="text-[11px] font-mono px-2 py-0.5 rounded border border-neutral-800 bg-neutral-950 text-neutral-400">
             2.0
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <a
-            href="https://github.com/shakibCodes/gitfolio"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl glass-card text-xs text-slate-300 hover:text-white border border-white/10 hover:border-emerald-500/30 transition-all font-mono"
-          >
-            <GithubIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Star on GitHub</span>
-          </a>
-        </div>
+        <a
+          href="https://github.com/shakibCodes/gitfolio"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-neutral-800 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900 text-xs text-neutral-300 transition-colors font-mono"
+        >
+          <GithubIcon className="w-3.5 h-3.5" />
+          <span>Star on GitHub</span>
+        </a>
       </header>
 
-      {/* Hero Section */}
-      <div className="w-full max-w-3xl flex flex-col items-center text-center my-auto py-10 relative z-10 space-y-6">
-        {/* Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-mono shadow-sm">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Gen Developer Intelligence & Showcase Platform</span>
+      {/* Hero Center */}
+      <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center my-auto py-16 space-y-7">
+        {/* Release Tag */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-800 bg-neutral-950 text-neutral-300 text-xs font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-neutral-300" />
+          <span>Developer Intelligence & Showcase Platform</span>
         </div>
 
-        {/* Hero Title */}
-        <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight">
-          Turn Any GitHub Profile Into a{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-            High-Value Portfolio
-          </span>
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white max-w-2xl leading-[1.1]">
+          Evaluate, showcase, and compare GitHub profiles.
         </h1>
 
-        <p className="text-sm sm:text-base text-slate-400 max-w-xl leading-relaxed">
-          Unlock algorithmic developer scoring, AI hiring dossiers, instant 1-click printable resumes, and side-by-side 1v1 developer battles.
+        <p className="text-sm sm:text-base text-neutral-400 max-w-xl leading-relaxed">
+          Algorithmic developer scores, client-ready portfolio generation, side-by-side engineering battles, and AI-driven recruiter dossiers.
         </p>
 
-        {/* Search Input Box */}
-        <div className="w-full max-w-xl">
+        {/* Search Bar */}
+        <div className="w-full max-w-lg pt-2">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -162,14 +156,8 @@ export default function SearchPage() {
             }}
             className="relative"
           >
-            <div
-              className={`flex items-center rounded-2xl glass-card border transition-all duration-300 p-2 ${
-                focused
-                  ? 'border-emerald-500/60 shadow-2xl shadow-emerald-500/15'
-                  : 'border-white/10 hover:border-white/20'
-              }`}
-            >
-              <div className="pl-3 pr-2 text-slate-500 font-mono text-sm font-bold">
+            <div className="flex items-center rounded-lg border border-neutral-800 bg-neutral-950 hover:border-neutral-700 focus-within:border-neutral-500 focus-within:ring-1 focus-within:ring-neutral-500 transition-all p-1.5 shadow-2xl">
+              <div className="pl-3 pr-2 text-neutral-500 font-mono text-xs">
                 github.com/
               </div>
 
@@ -182,22 +170,20 @@ export default function SearchPage() {
                   setUsername(e.target.value);
                   if (error) setError('');
                 }}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                className="flex-1 bg-transparent text-sm sm:text-base text-white placeholder-slate-600 outline-none font-mono"
+                className="flex-1 bg-transparent text-sm text-white placeholder-neutral-600 outline-none font-mono"
               />
 
               <button
                 type="submit"
                 disabled={loading || !username.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-slate-950 font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-white hover:bg-neutral-200 text-black font-medium text-xs transition-colors disabled:opacity-40"
               >
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Explore</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <span>Inspect</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </button>
@@ -205,7 +191,7 @@ export default function SearchPage() {
           </form>
 
           {error && (
-            <p className="text-xs text-red-400 mt-2 font-mono text-left pl-3">
+            <p className="text-xs text-neutral-400 mt-2 font-mono text-left pl-2">
               {error}
             </p>
           )}
@@ -213,14 +199,14 @@ export default function SearchPage() {
           {/* Recent Searches */}
           {recentSearches.length > 0 && (
             <div className="flex items-center gap-2 mt-4 flex-wrap text-left pl-1">
-              <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1">
+              <span className="text-[11px] font-mono text-neutral-500 flex items-center gap-1">
                 <History className="w-3 h-3" /> Recent:
               </span>
               {recentSearches.map((h) => (
                 <button
                   key={h}
                   onClick={() => handleSearch(h)}
-                  className="text-xs font-mono px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-emerald-400 border border-white/5 transition-all"
+                  className="text-xs font-mono px-2 py-0.5 rounded border border-neutral-800 hover:border-neutral-700 bg-neutral-950 text-neutral-400 hover:text-white transition-colors"
                 >
                   @{h}
                 </button>
@@ -229,94 +215,82 @@ export default function SearchPage() {
           )}
         </div>
 
-        {/* Featured Developer Avatars */}
+        {/* Featured Profiles */}
         <div className="w-full pt-6">
-          <div className="text-xs font-mono text-slate-500 uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Trending Open Source Titans</span>
+          <div className="text-[11px] font-mono text-neutral-500 uppercase tracking-wider mb-3">
+            Featured Profiles
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
             {FEATURED_DEVELOPERS.map((dev) => (
               <div
                 key={dev.handle}
                 onClick={() => handleSearch(dev.handle)}
-                className="glass-card-interactive rounded-xl p-3 border border-white/10 hover:border-emerald-500/40 text-center cursor-pointer group"
+                className="rounded-lg p-3 border border-neutral-900 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900/60 text-left cursor-pointer transition-all group"
               >
-                <div className="w-12 h-12 rounded-xl overflow-hidden mx-auto mb-2 border border-white/10 group-hover:border-emerald-400 transition-colors">
+                <div className="w-8 h-8 rounded-full overflow-hidden mb-2 border border-neutral-800">
                   <img
                     src={dev.avatar}
                     alt={dev.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <h4 className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 truncate font-mono">
+                <h4 className="text-xs font-medium text-neutral-200 group-hover:text-white truncate font-mono">
                   @{dev.handle}
                 </h4>
-                <p className="text-[10px] text-slate-400 truncate mt-0.5">{dev.role}</p>
-                <span className="text-[9px] text-emerald-400/80 font-mono block mt-1">
-                  {dev.stack}
-                </span>
+                <p className="text-[11px] text-neutral-500 truncate mt-0.5">{dev.role}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Feature Highlights Ribbon */}
-      <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-6 border-t border-white/5 relative z-10">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Award className="w-4 h-4" />
+      {/* Bottom Feature Grid */}
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 py-6 border-t border-neutral-900">
+        <div className="p-4 rounded-lg border border-neutral-900 bg-neutral-950">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Award className="w-4 h-4 text-neutral-300" />
+            <h4 className="text-xs font-semibold text-neutral-200">Developer Index</h4>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-200">Developer Score 2.0</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              0-100 index rating with 5-pillar velocity & consistency analysis.
-            </p>
-          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed">
+            Algorithmic 0–100 score evaluating output, velocity, and reach.
+          </p>
         </div>
 
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <Briefcase className="w-4 h-4" />
+        <div className="p-4 rounded-lg border border-neutral-900 bg-neutral-950">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Briefcase className="w-4 h-4 text-neutral-300" />
+            <h4 className="text-xs font-semibold text-neutral-200">Portfolio & PDF Resume</h4>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-200">Showcase & Resume Mode</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Transform stats into a client-ready portfolio & 1-page PDF CV.
-            </p>
-          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed">
+            Client-ready showcase view with built-in printable 1-page CV export.
+          </p>
         </div>
 
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Swords className="w-4 h-4" />
+        <div className="p-4 rounded-lg border border-neutral-900 bg-neutral-950">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Swords className="w-4 h-4 text-neutral-300" />
+            <h4 className="text-xs font-semibold text-neutral-200">Versus Mode</h4>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-200">1v1 Developer Versus</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Battle two developers head-to-head on stars, streaks, and output.
-            </p>
-          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed">
+            Head-to-head comparison benchmarking two engineers side-by-side.
+          </p>
         </div>
 
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-            <Bot className="w-4 h-4" />
+        <div className="p-4 rounded-lg border border-neutral-900 bg-neutral-950">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Bot className="w-4 h-4 text-neutral-300" />
+            <h4 className="text-xs font-semibold text-neutral-200">AI Intelligence</h4>
           </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-200">AI Intelligence Suite</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Instant code roasts, salary estimates, and recruiter dossiers.
-            </p>
-          </div>
+          <p className="text-[11px] text-neutral-500 leading-relaxed">
+            Contextual code roasts, compensation estimates, and role dossiers.
+          </p>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="w-full text-center text-xs text-slate-500 font-mono py-2 relative z-10">
-        GitFolio • The Developer Intelligence Platform
+      <footer className="w-full text-center text-xs text-neutral-600 font-mono py-2">
+        GitFolio • Powered by Next.js & GitHub API
       </footer>
     </main>
   );

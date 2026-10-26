@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Repo } from '@/types/github';
 import { getLangColor } from '@/lib/github';
-import { Star, GitFork, ExternalLink, Copy, Check, Terminal, ShieldAlert } from 'lucide-react';
+import { Star, GitFork, ExternalLink, Check, Terminal } from 'lucide-react';
 
 interface TopRepoProps {
   repo: Repo;
@@ -28,35 +28,31 @@ export default function TopRepo({ repo, onSelectRepo }: TopRepoProps) {
   return (
     <div
       onClick={() => onSelectRepo?.(repo)}
-      className="glass-card-interactive rounded-2xl p-5 border border-emerald-500/30 relative overflow-hidden group cursor-pointer"
+      className="rounded-xl border border-neutral-800 bg-neutral-950 hover:border-neutral-700 p-5 cursor-pointer transition-colors font-sans"
     >
-      {/* Decorative gradient glow */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
       {/* Top Badge */}
       <div className="flex items-center justify-between mb-3">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-          <Star className="w-3 h-3 fill-emerald-400 text-emerald-400" />
-          <span>Flagship Repository</span>
-        </div>
+        <span className="text-[11px] font-mono px-2 py-0.5 rounded border border-neutral-800 bg-neutral-900 text-neutral-300">
+          Featured Repository
+        </span>
 
         <button
           onClick={handleCopyClone}
           title="Copy clone command"
-          className="flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors"
+          className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded border border-neutral-800 hover:border-neutral-700 bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
         >
           {copiedClone ? (
-            <Check className="w-3 h-3 text-emerald-400" />
+            <Check className="w-3 h-3 text-neutral-200" />
           ) : (
             <Terminal className="w-3 h-3" />
           )}
-          <span>{copiedClone ? 'Copied clone!' : 'git clone'}</span>
+          <span>{copiedClone ? 'Copied' : 'git clone'}</span>
         </button>
       </div>
 
       {/* Repo title */}
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-base sm:text-lg font-bold text-slate-100 group-hover:text-emerald-400 transition-colors font-mono truncate">
+        <h3 className="text-base font-semibold text-white font-mono truncate">
           {repo.name}
         </h3>
         <a
@@ -64,15 +60,15 @@ export default function TopRepo({ repo, onSelectRepo }: TopRepoProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+          className="p-1 rounded text-neutral-500 hover:text-white transition-colors"
         >
-          <ExternalLink className="w-4 h-4" />
+          <ExternalLink className="w-3.5 h-3.5" />
         </a>
       </div>
 
       {/* Description */}
       {repo.description && (
-        <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-4">
+        <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed mb-4">
           {repo.description}
         </p>
       )}
@@ -80,53 +76,48 @@ export default function TopRepo({ repo, onSelectRepo }: TopRepoProps) {
       {/* Topics */}
       {repo.topics && repo.topics.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {repo.topics.slice(0, 5).map((topic) => (
+          {repo.topics.slice(0, 4).map((topic) => (
             <span
               key={topic}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-slate-900 border border-white/10 text-cyan-300 font-mono"
+              className="text-[11px] px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 font-mono"
             >
               #{topic}
             </span>
           ))}
-          {repo.topics.length > 5 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
-              +{repo.topics.length - 5}
-            </span>
-          )}
         </div>
       )}
 
       {/* Stats bar */}
-      <div className="flex items-center gap-4 text-xs text-slate-400 pt-3 border-t border-white/5">
+      <div className="flex items-center gap-4 text-xs text-neutral-400 pt-3 border-t border-neutral-900 font-mono">
         {repo.language && (
           <div className="flex items-center gap-1.5">
             <span
-              className="lang-dot"
+              className="w-2 h-2 rounded-full"
               style={{ background: getLangColor(repo.language) }}
             />
-            <span className="text-slate-200 font-medium">{repo.language}</span>
+            <span className="text-neutral-300">{repo.language}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-1 text-amber-400 font-mono">
-          <Star className="w-3.5 h-3.5 fill-amber-400" />
+        <div className="flex items-center gap-1 text-neutral-300">
+          <Star className="w-3 h-3 text-neutral-400" />
           <span>{repo.stargazers_count.toLocaleString()}</span>
         </div>
 
         {repo.forks_count > 0 && (
-          <div className="flex items-center gap-1 font-mono">
-            <GitFork className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center gap-1 text-neutral-400">
+            <GitFork className="w-3 h-3 text-neutral-500" />
             <span>{repo.forks_count.toLocaleString()}</span>
           </div>
         )}
 
         {repo.license && (
-          <span className="text-[11px] text-slate-400 border border-white/10 px-1.5 py-0.5 rounded">
+          <span className="text-[11px] text-neutral-500 border border-neutral-800 px-1.5 py-0.2 rounded">
             {repo.license.spdx_id || repo.license.name}
           </span>
         )}
 
-        <span className="ml-auto text-[11px] text-slate-500">Updated {updatedAt}</span>
+        <span className="ml-auto text-[11px] text-neutral-500">{updatedAt}</span>
       </div>
     </div>
   );
